@@ -1,5 +1,7 @@
 {
   "itemGroup.mistvale_rpg": "MistvaleRPG",
+  "item.mistvale_rpg.ember_shard": "Ember Shard",
+  "message.mistvale_rpg.shard_warm": "The shard is warm.",
   "block.mistvale_rpg.example_block": "Example Block",
   "item.mistvale_rpg.example_item": "Example Item",
 

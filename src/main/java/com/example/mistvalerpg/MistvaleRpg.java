@@ -53,6 +53,10 @@ public class MistvaleRpg {
     public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder()
             .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
 
+    // the Ember Shard Item
+    public static final DeferredItem<EmberShardItem> EMBER_SHARD =
+            ITEMS.registerItem("ember_shard", EmberShardItem::new, new Item.Properties());
+
     // Creates a creative tab with the id "mistvale_rpg:example_tab" for the example item, that is placed after the combat tab
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.mistvale_rpg")) //The language key for the title of your CreativeModeTab
@@ -104,6 +108,9 @@ public class MistvaleRpg {
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(EXAMPLE_BLOCK_ITEM);
+        }
+        if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(EMBER_SHARD);
         }
     }
 
