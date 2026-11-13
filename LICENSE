@@ -1,0 +1,32 @@
+Copyright (c) 2026 NebulanEnt. All rights reserved.
+
+MistvaleRPG (the "Work") includes its source code, textures, models,
+animations, sounds, text and all other files in this repository.
+
+Permission is granted to:
+
+  1. View and read the source code in this repository.
+  2. Download, build and run the Work for personal, non-commercial use.
+  3. Include the official, unmodified release in a modpack, provided that
+     the modpack credits NebulanEnt as the author and links to this
+     repository.
+
+Without prior written permission from the copyright holder, you may NOT:
+
+  - copy, reuse or republish any part of the Work, including code, art,
+    sounds or story text, in another project;
+  - modify the Work or distribute modified versions of it;
+  - distribute the Work outside of an official release or modpack as
+    described above;
+  - sell the Work or use it for any commercial purpose.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE WORK OR ITS USE.
+
+Third-party components keep their own licenses. This includes NeoForge,
+GeckoLib and Minecraft (by Mojang Studios), none of which are covered by
+this license. The build files that came from the NeoForge MDK template are
+covered by TEMPLATE_LICENSE.txt.

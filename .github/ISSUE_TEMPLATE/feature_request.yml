@@ -1,0 +1,20 @@
+name: Idea or suggestion
+description: Suggest something for the story, the Quest Book, rifts, mobs or anything else.
+labels: ["idea"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it fit Mistvale?
+      description: How does it help the story or the cozy feeling of the world?
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Sketches, references or related ideas.

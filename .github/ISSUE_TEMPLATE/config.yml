@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/NebulanEnt/mistvale-rpg/discussions
+    about: Ask a question or talk about the story in Discussions.
+  - name: Report a security problem
+    url: https://github.com/NebulanEnt/mistvale-rpg/security/advisories/new
+    about: Please report vulnerabilities privately here, not in a public issue.

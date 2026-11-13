@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in MistvaleRPG does not work the way it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please fill in as much as you can.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Tell us what you did, what you expected, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run /mistvale rift blue
+        2. Walk into the rift
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: MistvaleRPG version
+    validations:
+      required: true
+  - type: input
+    id: neoforge-version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.1.x"
+    validations:
+      required: true
+  - type: input
+    id: geckolib-version
+    attributes:
+      label: GeckoLib version
+      placeholder: "4.9.3"
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where did it happen?
+      options:
+        - Singleplayer
+        - Multiplayer client
+        - Dedicated server
+    validations:
+      required: true
+  - type: textarea
+    id: other-mods
+    attributes:
+      label: Other mods installed
+      description: Does it also happen with only NeoForge, GeckoLib and MistvaleRPG?
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log or crash report
+      description: Paste `latest.log` or the crash report, or attach it as a file.
+      render: text
