@@ -2,5 +2,24 @@
   "itemGroup.mistvale_rpg": "MistvaleRPG",
   "item.mistvale_rpg.soul_shard": "Soul Shard",
   "tooltip.mistvale_rpg.soul_shard": "A splinter of a restless soul.",
-  "tooltip.mistvale_rpg.soul_shard.use": "Use it on a Caged Soul Block. Three shards break the cage."
+  "tooltip.mistvale_rpg.soul_shard.use": "Use it on a Caged Soul Block. Three shards break the cage.",
+
+  "block.mistvale_rpg.caged_soul_block": "Caged Soul Block",
+  "block.mistvale_rpg.charged_soul_block": "Charged Soul Block",
+  "tooltip.mistvale_rpg.soul_of": "Soul of %s",
+  "tooltip.mistvale_rpg.caged_soul.charge": "Charge: %s / %s",
+  "message.mistvale_rpg.caged_soul.needs_shard": "The soul is caged. It stirs at the touch of a Soul Shard.",
+  "message.mistvale_rpg.caged_soul.fed": "The cage weakens: %s / %s",
+  "message.mistvale_rpg.caged_soul.freed": "The cage breaks. The soul of %s is free.",
+  "message.mistvale_rpg.charged_soul.waiting": "The soul of %s waits. Nine souls together will open the way.",
+
+  "soul.mistvale_rpg.helvar": "Helvar",
+  "soul.mistvale_rpg.ignis": "Ignis",
+  "soul.mistvale_rpg.scylla": "Scylla",
+  "soul.mistvale_rpg.nerakyss": "Nerakyss",
+  "soul.mistvale_rpg.skor": "Skor",
+  "soul.mistvale_rpg.ashlord": "Ashlord",
+  "soul.mistvale_rpg.sirok": "Sirok",
+  "soul.mistvale_rpg.ender_dragon": "the Ender Dragon",
+  "soul.mistvale_rpg.apostle": "the Apostle"
 }

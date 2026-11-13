@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "charge=0": { "model": "mistvale_rpg:block/caged_soul_block_0" },
+    "charge=1": { "model": "mistvale_rpg:block/caged_soul_block_1" },
+    "charge=2": { "model": "mistvale_rpg:block/caged_soul_block_2" }
+  }
+}

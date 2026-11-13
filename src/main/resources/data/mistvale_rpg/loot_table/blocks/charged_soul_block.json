@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mistvale_rpg:charged_soul_block",
+          "functions": [
+            {
+              "function": "minecraft:copy_state",
+              "block": "mistvale_rpg:charged_soul_block",
+              "properties": [ "soul" ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        { "condition": "minecraft:survives_explosion" }
+      ]
+    }
+  ]
+}

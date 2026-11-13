@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "mistvale_rpg:block/caged_soul_block_0"
+  }
+}
