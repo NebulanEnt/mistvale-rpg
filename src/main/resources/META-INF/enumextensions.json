@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "enum": "net/minecraft/world/item/Rarity",
+      "name": "MISTVALE_RPG_COMMON",
+      "constructor": "(ILjava/lang/String;Ljava/util/function/UnaryOperator;)V",
+      "parameters": { "class": "com/example/mistvalerpg/ModRarities", "field": "COMMON" }
+    },
+    {
+      "enum": "net/minecraft/world/item/Rarity",
+      "name": "MISTVALE_RPG_UNCOMMON",
+      "constructor": "(ILjava/lang/String;Ljava/util/function/UnaryOperator;)V",
+      "parameters": { "class": "com/example/mistvalerpg/ModRarities", "field": "UNCOMMON" }
+    },
+    {
+      "enum": "net/minecraft/world/item/Rarity",
+      "name": "MISTVALE_RPG_RARE",
+      "constructor": "(ILjava/lang/String;Ljava/util/function/UnaryOperator;)V",
+      "parameters": { "class": "com/example/mistvalerpg/ModRarities", "field": "RARE" }
+    },
+    {
+      "enum": "net/minecraft/world/item/Rarity",
+      "name": "MISTVALE_RPG_EPIC",
+      "constructor": "(ILjava/lang/String;Ljava/util/function/UnaryOperator;)V",
+      "parameters": { "class": "com/example/mistvalerpg/ModRarities", "field": "EPIC" }
+    },
+    {
+      "enum": "net/minecraft/world/item/Rarity",
+      "name": "MISTVALE_RPG_LEGENDARY",
+      "constructor": "(ILjava/lang/String;Ljava/util/function/UnaryOperator;)V",
+      "parameters": { "class": "com/example/mistvalerpg/ModRarities", "field": "LEGENDARY" }
+    },
+    {
+      "enum": "net/minecraft/world/item/Rarity",
+      "name": "MISTVALE_RPG_MYTHIC",
+      "constructor": "(ILjava/lang/String;Ljava/util/function/UnaryOperator;)V",
+      "parameters": { "class": "com/example/mistvalerpg/ModRarities", "field": "MYTHIC" }
+    }
+  ]
+}

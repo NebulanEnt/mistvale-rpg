@@ -49,6 +49,9 @@ description='''
 MistvaleRPG is a cozy, story-driven adventure that ties many mods into one journey.
 '''
 
+# Our own rarity levels (gray, emerald, blue, violet, gold, red) are added to Minecraft through this file.
+enumExtensions="META-INF/enumextensions.json"
+
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
 #[[mixins]]
 #config="${mod_id}.mixins.json"

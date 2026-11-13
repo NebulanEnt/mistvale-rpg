@@ -1,16 +1,6 @@
 {
   "itemGroup.mistvale_rpg": "MistvaleRPG",
-  "item.mistvale_rpg.ember_shard": "Ember Shard",
-  "message.mistvale_rpg.shard_warm": "The shard is warm.",
-  "block.mistvale_rpg.ember_block": "Ember Block",
-  "block.mistvale_rpg.example_block": "Example Block",
-  "item.mistvale_rpg.example_item": "Example Item",
-
-  "mistvale_rpg.configuration.title": "Example Mod Configs",
-  "mistvale_rpg.configuration.section.mistvale_rpg.common.toml": "Example Mod Configs",
-  "mistvale_rpg.configuration.section.mistvale_rpg.common.toml.title": "Example Mod Configs",
-  "mistvale_rpg.configuration.items": "Item List",
-  "mistvale_rpg.configuration.logDirtBlock": "Log Dirt Block",
-  "mistvale_rpg.configuration.magicNumberIntroduction": "Magic Number Text",
-  "mistvale_rpg.configuration.magicNumber": "Magic Number"
+  "item.mistvale_rpg.soul_shard": "Soul Shard",
+  "tooltip.mistvale_rpg.soul_shard": "A splinter of a restless soul.",
+  "tooltip.mistvale_rpg.soul_shard.use": "Use it on a Caged Soul Block. Three shards break the cage."
 }

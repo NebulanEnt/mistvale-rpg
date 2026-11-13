@@ -30,9 +30,9 @@ public class MistvaleRpg {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
     // ---- Souls ----
-    // Soul Shard: dropped by lesser bosses, fed to a Caged Soul Block. Rare = aqua name.
+    // Soul Shard: dropped by lesser bosses, fed to a Caged Soul Block.
     public static final DeferredItem<SoulShardItem> SOUL_SHARD =
-            ITEMS.registerItem("soul_shard", SoulShardItem::new, new Item.Properties().rarity(Rarity.RARE));
+            ITEMS.registerItem("soul_shard", SoulShardItem::new, new Item.Properties().rarity(ModRarities.RARE.getValue()));
 
     // ---- Creative tab ----
     // One tab for the whole mod. Items appear in the order they are listed here.
