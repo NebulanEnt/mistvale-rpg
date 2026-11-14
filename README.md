@@ -24,11 +24,13 @@ The goal is not to add more content for its own sake. The goal is that exploring
 
 - **Soul Shards and nine souls.** Collect shards, feed them to caged souls and set free the spirits of Mistvale.
 - **Six custom rarities.** Gear is graded in six tiers, each with its own colour and presence.
-- **Animated Caged Soul Block.** A GeckoLib-animated cage that reacts to every shard you give it, glows in the colour of the soul inside, and breaks open on the third.
+- **Animated Caged Soul Block.** A GeckoLib-animated cage that reacts to every shard you give it, glows in the colour of the soul inside, and breaks open on the third. The living soul inside it is carved with the runes of its own soul.
 - **Charged Soul Block and the soul platform.** Place nine different souls on the eight lanes around a centre block, at any height, and a ritual begins. Build circles, spirals or obelisks.
-- **Rifts.** Six rift variants (blue, orange, corrupted, white, end and deep) with their own opening, closing and crossing animations, sounds and screen effects.
-- **The Spirit of Mistvale.** A hovering guide with its own model, voice and appearances.
-- **Dialogue.** An old-school RPG dialogue box with a portrait for every mood, typed text with a voice, answers to pick, and choices the game remembers.
+- **Soul Crystals.** Turn a Charged Soul Block into a floating crystal that spins and bobs like an End Crystal: two faint ghost cubes around the solid, rune-carved soul block, wrapped in swirling magic in the soul's colour. Each of the nine souls has its own runes and its own icon, and a crystal can be crafted back into a block at any time.
+- **Rifts.** Six rift variants (blue, orange, corrupted, white, end and deep) with their own opening, closing and crossing animations, sounds and screen effects. A rift starts pulling you the moment you touch it.
+- **The Spirit of Mistvale.** A hovering guide with its own model, voice and appearances. Her 3D model moves its mouth and changes mood along with her words.
+- **Dialogue.** An old-school RPG dialogue box with a portrait for every mood. The portrait opens its mouth while the speaker talks, and every speaker has their own voice: the text types out letter by letter with little breaths after punctuation. When you ask something, the box shows your own character, drawn live in front of a drifting mist backdrop, speaking in your own voice. Answers are picked with the mouse, the number keys or the arrow keys, and the game remembers your choices.
+- **Cutscene tools.** The first piece of the film toolkit the story is built on: a screen fade to black and back, with its own timing for going dark, staying dark and coming back. More tools (cinematic bars, subtitles, a flying film camera) are on the way.
 
 ## Coming next
 
@@ -54,6 +56,7 @@ These need operator permission (level 2).
 | `/mistvale rift <variant>` | Opens a rift a few blocks ahead of you. It closes on its own after two minutes. |
 | `/mistvale spirit` | Summons the Spirit of Mistvale near you for a short visit. |
 | `/mistvale dialogue <scene>` | Plays a conversation. `/mistvale dialogue reset` makes the Spirit forget you. |
+| `/mistvale cutscene fade <in> <hold> <out>` | Fades your screen to black and back. The three times are in ticks (20 ticks are one second). |
 
 ## Building from source
 
