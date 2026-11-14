@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "mistvale_rpg:block/rift" },
+    "facing=south": { "model": "mistvale_rpg:block/rift" },
+    "facing=east": { "model": "mistvale_rpg:block/rift" },
+    "facing=west": { "model": "mistvale_rpg:block/rift" }
+  }
+}

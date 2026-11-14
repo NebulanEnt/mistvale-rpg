@@ -2,6 +2,7 @@ package com.example.mistvalerpg.soul;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -30,6 +31,21 @@ public class ChargedSoulBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SoulId.PROPERTY);
+    }
+
+    // Runs when this block appears in the world (placed by hand, or freed from a cage).
+    // Every time one lands, we check whether it completes the nine-soul platform.
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        if (level instanceof ServerLevel serverLevel && !oldState.is(this)) {
+            SoulPlatform.onChargedPlaced(serverLevel, pos);
+        }
+    }
+
+    // The ritual asks the middle block to tick every few moments; see SoulPlatform.
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        SoulPlatform.ritualTick(level, pos);
     }
 
     @Override

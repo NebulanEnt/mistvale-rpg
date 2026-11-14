@@ -2,6 +2,8 @@ package com.example.mistvalerpg;
 
 import org.slf4j.Logger;
 
+import com.example.mistvalerpg.rift.RiftBlock;
+import com.example.mistvalerpg.rift.RiftWarp;
 import com.example.mistvalerpg.soul.CagedSoulBlock;
 import com.example.mistvalerpg.soul.ChargedSoulBlock;
 import com.example.mistvalerpg.soul.SoulBlockItem;
@@ -21,6 +23,8 @@ import net.minecraft.world.item.Rarity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -64,6 +68,26 @@ public class MistvaleRpg {
                     .sound(SoundType.GLASS)
                     .lightLevel(state -> 13));
 
+    // ---- Rifts ----
+    // The rift block has no item: it is only ever opened by a ritual or by the /mistvale command.
+    // Like bedrock it cannot be broken, it has no hitbox, and it gets out of the way if something is built on it.
+    public static final DeferredBlock<RiftBlock> RIFT_BLOCK = BLOCKS.registerBlock(
+            "rift",
+            RiftBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.NONE)
+                    .strength(-1.0F, 3600000.0F)
+                    .noCollission()
+                    .noOcclusion()
+                    .noLootTable()
+                    .pushReaction(PushReaction.BLOCK)
+                    .replaceable());
+
+    // ---- The Spirit ----
+    // A spawn egg is the easy way to place her in creative mode.
+    public static final DeferredItem<DeferredSpawnEggItem> SPIRIT_SPAWN_EGG = ITEMS.register("spirit_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.SPIRIT, 0x7FE6D6, 0xFFF1B8, new Item.Properties()));
+
     public static final DeferredItem<SoulBlockItem> CAGED_SOUL_BLOCK_ITEM = ITEMS.register("caged_soul_block",
             () -> new SoulBlockItem(CAGED_SOUL_BLOCK.get(), new Item.Properties().rarity(ModRarities.EPIC.getValue())));
     public static final DeferredItem<SoulBlockItem> CHARGED_SOUL_BLOCK_ITEM = ITEMS.register("charged_soul_block",
@@ -83,6 +107,7 @@ public class MistvaleRpg {
                 for (SoulId soul : SoulId.values()) {
                     output.accept(SoulBlockItem.withSoul(CHARGED_SOUL_BLOCK_ITEM.get(), soul));
                 }
+                output.accept(SPIRIT_SPAWN_EGG.get());
             }).build());
 
     // The constructor is the first code that runs when the mod is loaded.
@@ -90,5 +115,13 @@ public class MistvaleRpg {
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        ModEntities.ENTITIES.register(modEventBus);
+        ModSounds.SOUNDS.register(modEventBus);
+        ModParticles.PARTICLES.register(modEventBus);
+
+        modEventBus.addListener(ModEntities::onAttributes);      // health and so on for the Spirit
+        modEventBus.addListener(RiftWarp::registerPayloads);     // the three messages a rift sends to the player's screen
+        NeoForge.EVENT_BUS.addListener(ModCommands::onRegisterCommands);
     }
 }

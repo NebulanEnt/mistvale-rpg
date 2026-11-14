@@ -27,7 +27,11 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    // GeckoLib is published on its own server, so Gradle needs to know where to look.
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+    }
 }
 
 base {
@@ -116,6 +120,9 @@ configurations {
 }
 
 dependencies {
+    // GeckoLib draws our animated 3D models (the cage, the rifts and the Spirit).
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

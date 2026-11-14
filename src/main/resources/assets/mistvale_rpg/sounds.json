@@ -1,0 +1,21 @@
+{
+  "rift_open": { "sounds": [ { "name": "mistvale_rpg:fx/rift_open", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.rift_open" },
+  "rift_close": { "sounds": [ { "name": "mistvale_rpg:fx/rift_close", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.rift_close" },
+  "warp_charge": { "sounds": [ { "name": "mistvale_rpg:fx/warp_charge", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.warp_charge" },
+  "warp_blow": { "sounds": [ { "name": "mistvale_rpg:fx/warp_blow", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.warp_blow" },
+  "warp_arrive": { "sounds": [ { "name": "mistvale_rpg:fx/warp_arrive", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.warp_arrive" },
+  "void_charge": { "sounds": [ { "name": "mistvale_rpg:fx/void_charge", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.void_charge" },
+  "void_devour": { "sounds": [ { "name": "mistvale_rpg:fx/void_devour", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.void_devour" },
+  "void_arrive": { "sounds": [ { "name": "mistvale_rpg:fx/void_arrive", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.void_arrive" },
+  "spirit_appear": { "sounds": [ { "name": "mistvale_rpg:fx/spirit_appear", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.spirit_appear" },
+  "spirit_vanish": { "sounds": [ { "name": "mistvale_rpg:fx/spirit_vanish", "stream": false } ], "subtitle": "subtitles.mistvale_rpg.spirit_vanish" },
+  "spirit_voice": {
+    "sounds": [
+      "mistvale_rpg:voice/spirit_a",
+      "mistvale_rpg:voice/spirit_b",
+      "mistvale_rpg:voice/spirit_c",
+      "mistvale_rpg:voice/spirit_d"
+    ],
+    "subtitle": "subtitles.mistvale_rpg.spirit_voice"
+  }
+}
