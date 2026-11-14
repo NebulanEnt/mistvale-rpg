@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * A freed soul. Anything breaks it, and it drops itself still holding its soul.
- * Nine different ones laid as a 3x3 platform will open the Corrupted Rift.
+ * Nine different ones laid out on the soul platform's lanes will open the Corrupted Rift (see SoulPlatform).
  */
 public class ChargedSoulBlock extends Block {
 
@@ -40,12 +40,6 @@ public class ChargedSoulBlock extends Block {
         if (level instanceof ServerLevel serverLevel && !oldState.is(this)) {
             SoulPlatform.onChargedPlaced(serverLevel, pos);
         }
-    }
-
-    // The ritual asks the middle block to tick every few moments; see SoulPlatform.
-    @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        SoulPlatform.ritualTick(level, pos);
     }
 
     @Override

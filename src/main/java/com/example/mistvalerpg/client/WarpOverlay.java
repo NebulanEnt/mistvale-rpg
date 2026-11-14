@@ -31,7 +31,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 public final class WarpOverlay {
     private enum Phase { NONE, PULL, ARRIVED, ABORT }
 
-    private static final long PULL_MS = 1500L;     // build-up while you are held in place
+    private static final long PULL_MS = 850L;      // build-up while you are held in place; matches the rift's 18-tick delay
     private static final long ARRIVED_MS = 1400L;  // fade-out after landing
     private static final long ABORT_MS = 500L;     // quick fade if the rift closes on you
 

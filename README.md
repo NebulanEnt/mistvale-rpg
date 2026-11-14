@@ -25,13 +25,14 @@ The goal is not to add more content for its own sake. The goal is that exploring
 - **Soul Shards and nine souls.** Collect shards, feed them to caged souls and set free the spirits of Mistvale.
 - **Six custom rarities.** Gear is graded in six tiers, each with its own colour and presence.
 - **Animated Caged Soul Block.** A GeckoLib-animated cage that reacts to every shard you give it, glows in the colour of the soul inside, and breaks open on the third.
-- **Charged Soul Block and the soul platform.** Arrange nine different souls in a 3×3 ring and a ritual begins.
+- **Charged Soul Block and the soul platform.** Place nine different souls on the eight lanes around a centre block, at any height, and a ritual begins. Build circles, spirals or obelisks.
 - **Rifts.** Six rift variants (blue, orange, corrupted, white, end and deep) with their own opening, closing and crossing animations, sounds and screen effects.
 - **The Spirit of Mistvale.** A hovering guide with its own model, voice and appearances.
+- **Dialogue.** An old-school RPG dialogue box with a portrait for every mood, typed text with a voice, answers to pick, and choices the game remembers.
 
 ## Coming next
 
-- The first dialogue scene with the Spirit
+- The prologue: the Kraken ship in a storm, and the misty beach where the Spirit finds you
 - The Quest Book: an Armory, Advancements and a Bestiary first, then the storylines
 - Real destinations behind the remaining rift variants
 
@@ -52,6 +53,7 @@ These need operator permission (level 2).
 | --- | --- |
 | `/mistvale rift <variant>` | Opens a rift a few blocks ahead of you. It closes on its own after two minutes. |
 | `/mistvale spirit` | Summons the Spirit of Mistvale near you for a short visit. |
+| `/mistvale dialogue <scene>` | Plays a conversation. `/mistvale dialogue reset` makes the Spirit forget you. |
 
 ## Building from source
 

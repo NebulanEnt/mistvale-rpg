@@ -1,5 +1,31 @@
 {
   "variants": {
-    "": { "model": "mistvale_rpg:block/charged_soul_block" }
+    "soul=helvar": {
+      "model": "mistvale_rpg:block/charged_soul_block_helvar"
+    },
+    "soul=ignis": {
+      "model": "mistvale_rpg:block/charged_soul_block_ignis"
+    },
+    "soul=scylla": {
+      "model": "mistvale_rpg:block/charged_soul_block_scylla"
+    },
+    "soul=nerakyss": {
+      "model": "mistvale_rpg:block/charged_soul_block_nerakyss"
+    },
+    "soul=skor": {
+      "model": "mistvale_rpg:block/charged_soul_block_skor"
+    },
+    "soul=ashlord": {
+      "model": "mistvale_rpg:block/charged_soul_block_ashlord"
+    },
+    "soul=sirok": {
+      "model": "mistvale_rpg:block/charged_soul_block_sirok"
+    },
+    "soul=ender_dragon": {
+      "model": "mistvale_rpg:block/charged_soul_block_ender_dragon"
+    },
+    "soul=apostle": {
+      "model": "mistvale_rpg:block/charged_soul_block_apostle"
+    }
   }
 }

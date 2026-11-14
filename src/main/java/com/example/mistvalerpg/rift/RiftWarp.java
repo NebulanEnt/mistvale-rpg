@@ -2,7 +2,6 @@ package com.example.mistvalerpg.rift;
 
 import com.example.mistvalerpg.ModSounds;
 import com.example.mistvalerpg.MistvaleRpg;
-import com.example.mistvalerpg.client.WarpOverlay;
 
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
@@ -20,7 +19,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.joml.Vector3f;
 
 /**
@@ -48,17 +46,12 @@ public final class RiftWarp {
         }
     }
 
-    /** Tells the game this message exists and what to do with it when it arrives on the player's computer. */
-    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("1").playToClient(Warp.TYPE, Warp.CODEC, (payload, context) -> WarpOverlay.onPacket(payload));
-    }
-
     // ---- The three moments ----
 
-    /** The player just stepped into the rift. */
+    /** The player just touched the rift. */
     public static void begin(ServerPlayer player, RiftVariant variant) {
         PacketDistributor.sendToPlayer(player, new Warp(variant.ordinal(), IN));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 38, 3, false, false, false)); // held in place while the pull builds
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, RiftBlockEntity.TELEPORT_DELAY + 6, 3, false, false, false)); // held in place while the pull builds
         ServerLevel level = player.serverLevel();
         level.playSound(player, player.getX(), player.getY(), player.getZ(), charge(variant), SoundSource.PLAYERS, 1.1F, pitch(variant));
         burst(level, variant, player.getX(), player.getY() + 1.0, player.getZ(), 0.6, 18);

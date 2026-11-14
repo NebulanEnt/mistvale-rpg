@@ -51,8 +51,8 @@ public class RiftBlockEntity extends BlockEntity implements GeoBlockEntity {
     // Lengths of the opening and closing animations, in ticks.
     private static final int OPEN_TICKS = 40;
     private static final int CLOSE_TICKS = 34;
-    /** From stepping into the rift to actually arriving on the other side. */
-    public static final int TELEPORT_DELAY = 32;
+    /** From touching the rift to actually arriving on the other side (18 ticks is under a second). */
+    public static final int TELEPORT_DELAY = 18;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private State state = State.CLOSED;
@@ -215,8 +215,11 @@ public class RiftBlockEntity extends BlockEntity implements GeoBlockEntity {
         return s <= 0.95 && up > -1.3 && up < 3.1;
     }
 
-    // Watches players near the rift. Stepping from the front to the back (or the other way) through
-    // the sheet counts as a crossing. Walking in from the front starts the pull.
+    // How close to the glowing sheet counts as touching it, in blocks (the player's own width is added on top).
+    private static final double TOUCH_DEPTH = 0.3;
+
+    // Watches players near the rift. The moment a player's body touches the sheet, coming from the front,
+    // the pull begins: no need to walk all the way through first.
     private void detectCrossing(Level level, BlockPos pos, BlockState blockState) {
         Direction facing = blockState.getValue(RiftBlock.FACING);
         double centerX = pos.getX() + 0.5;
@@ -229,21 +232,27 @@ public class RiftBlockEntity extends BlockEntity implements GeoBlockEntity {
             double dz = player.getZ() - centerZ;
             double depth = dx * facing.getStepX() + dz * facing.getStepZ();     // in front of (+) or behind (-) the sheet
             double sideways = Math.abs(dx * facing.getStepZ() - dz * facing.getStepX());
-            double up = player.getY() - pos.getY();
-            boolean inFront = depth > 0.0;
+            double feet = player.getY() - pos.getY();
 
-            Boolean wasInFront = frontSide.put(player.getUUID(), inFront);
-            boolean crossed = wasInFront != null && wasInFront != inFront && insideSheet(sideways, up) && Math.abs(depth) <= 0.9;
-            if (!crossed) {
+            // Touching = the player's body is within reach of the sheet at the feet, the middle or the head.
+            double reach = TOUCH_DEPTH + player.getBbWidth() / 2.0;
+            boolean touching = Math.abs(depth) <= reach
+                    && (insideSheet(sideways, feet) || insideSheet(sideways, feet + player.getBbHeight() / 2.0) || insideSheet(sideways, feet + player.getBbHeight()));
+
+            // Which side were they on before they got close? We only update this while they are clear of the sheet.
+            if (Math.abs(depth) > reach) {
+                frontSide.put(player.getUUID(), depth > 0.0);
+            }
+            if (!touching) {
                 continue;
             }
-            boolean enteringFromFront = wasInFront;
-            if (enteringFromFront && player instanceof ServerPlayer serverPlayer
+            boolean fromFront = frontSide.getOrDefault(player.getUUID(), depth > 0.0);
+            if (fromFront && player instanceof ServerPlayer serverPlayer
                     && pendingTeleports.putIfAbsent(serverPlayer.getUUID(), TELEPORT_DELAY) == null) {
                 RiftWarp.begin(serverPlayer, variant);
             }
             if (variant.flashFx && fxCooldown == 0) {
-                triggerAnim("rift_fx", enteringFromFront ? "enter" : "exit");
+                triggerAnim("rift_fx", fromFront ? "enter" : "exit");
                 fxCooldown = 20;
             }
         }

@@ -2,6 +2,9 @@ package com.example.mistvalerpg;
 
 import java.util.Arrays;
 
+import com.example.mistvalerpg.dialogue.DialogueManager;
+import com.example.mistvalerpg.dialogue.DialogueScene;
+import com.example.mistvalerpg.dialogue.DialogueScenes;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.spirit.SpiritEntity;
@@ -23,6 +26,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *
  *   /mistvale rift <blue|orange|corrupted|white|end|deep>   opens a rift 4 blocks in front of you
  *   /mistvale spirit                                        makes the Spirit appear in front of you
+ *   /mistvale dialogue <scene>                              plays a conversation for you
+ *   /mistvale dialogue reset                                makes the Spirit forget you (clears seen scenes and your chosen land)
  */
 public final class ModCommands {
 
@@ -35,7 +40,17 @@ public final class ModCommands {
                                         Arrays.stream(RiftVariant.values()).map(RiftVariant::getSerializedName), builder))
                                 .executes(context -> openRift(context, StringArgumentType.getString(context, "variant")))))
                 .then(Commands.literal("spirit")
-                        .executes(ModCommands::summonSpirit)));
+                        .executes(ModCommands::summonSpirit))
+                .then(Commands.literal("dialogue")
+                        .then(Commands.literal("reset")
+                                .executes(context -> {
+                                    DialogueManager.reset(context.getSource().getPlayerOrException());
+                                    context.getSource().sendSuccess(() -> Component.literal("The Spirit has forgotten you."), true);
+                                    return 1;
+                                }))
+                        .then(Commands.argument("scene", StringArgumentType.word())
+                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(DialogueScenes.ids(), builder))
+                                .executes(context -> playDialogue(context, StringArgumentType.getString(context, "scene"))))));
     }
 
     private static int openRift(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
@@ -52,6 +67,19 @@ public final class ModCommands {
     private static int summonSpirit(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         SpiritEntity.appearNear(player.serverLevel(), player.blockPosition().relative(player.getDirection(), 3).above());
+        return 1;
+    }
+
+    private static int playDialogue(CommandContext<CommandSourceStack> context, String id) throws CommandSyntaxException {
+        DialogueScene scene = DialogueScenes.get(id);
+        if (scene == null) {
+            context.getSource().sendFailure(Component.literal("There is no scene called " + id + "."));
+            return 0;
+        }
+        // If the Spirit is standing within 8 blocks she talks along with her own 3D model.
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        SpiritEntity spirit = player.level().getEntitiesOfClass(SpiritEntity.class, player.getBoundingBox().inflate(8.0)).stream().findFirst().orElse(null);
+        DialogueManager.start(player, scene, spirit);
         return 1;
     }
 

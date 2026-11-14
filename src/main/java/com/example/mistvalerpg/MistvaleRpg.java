@@ -3,28 +3,31 @@ package com.example.mistvalerpg;
 import org.slf4j.Logger;
 
 import com.example.mistvalerpg.rift.RiftBlock;
-import com.example.mistvalerpg.rift.RiftWarp;
+import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.soul.CagedSoulBlock;
 import com.example.mistvalerpg.soul.ChargedSoulBlock;
 import com.example.mistvalerpg.soul.SoulBlockItem;
+import com.example.mistvalerpg.soul.SoulCrystalItem;
 import com.example.mistvalerpg.soul.SoulId;
+import com.example.mistvalerpg.soul.SoulPlatform;
 import com.example.mistvalerpg.soul.SoulShardItem;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.item.Rarity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -93,6 +96,10 @@ public class MistvaleRpg {
     public static final DeferredItem<SoulBlockItem> CHARGED_SOUL_BLOCK_ITEM = ITEMS.register("charged_soul_block",
             () -> new SoulBlockItem(CHARGED_SOUL_BLOCK.get(), new Item.Properties().rarity(ModRarities.LEGENDARY.getValue())));
 
+    // Soul Crystal: the floating form of a Charged Soul Block. They turn into each other in the crafting grid.
+    public static final DeferredItem<SoulCrystalItem> SOUL_CRYSTAL_ITEM = ITEMS.register("soul_crystal",
+            () -> new SoulCrystalItem(new Item.Properties().rarity(ModRarities.LEGENDARY.getValue())));
+
     // ---- Creative tab ----
     // One tab for the whole mod. Items appear in the order they are listed here.
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
@@ -107,6 +114,9 @@ public class MistvaleRpg {
                 for (SoulId soul : SoulId.values()) {
                     output.accept(SoulBlockItem.withSoul(CHARGED_SOUL_BLOCK_ITEM.get(), soul));
                 }
+                for (SoulId soul : SoulId.values()) {
+                    output.accept(SoulBlockItem.withSoul(SOUL_CRYSTAL_ITEM.get(), soul));
+                }
                 output.accept(SPIRIT_SPAWN_EGG.get());
             }).build());
 
@@ -119,9 +129,17 @@ public class MistvaleRpg {
         ModEntities.ENTITIES.register(modEventBus);
         ModSounds.SOUNDS.register(modEventBus);
         ModParticles.PARTICLES.register(modEventBus);
+        ModAttachments.ATTACHMENTS.register(modEventBus);
 
         modEventBus.addListener(ModEntities::onAttributes);      // health and so on for the Spirit
-        modEventBus.addListener(RiftWarp::registerPayloads);     // the three messages a rift sends to the player's screen
+        modEventBus.addListener(ModNetwork::register);           // every message between the server and the player's game
         NeoForge.EVENT_BUS.addListener(ModCommands::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(SoulPlatform::onLevelTick);   // the soul platform's ritual steps
+        // A player who logs out in the middle of a conversation must not stay "talking" forever.
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                DialogueManager.forget(player);
+            }
+        });
     }
 }

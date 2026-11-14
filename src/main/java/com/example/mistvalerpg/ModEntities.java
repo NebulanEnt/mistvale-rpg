@@ -1,5 +1,6 @@
 package com.example.mistvalerpg;
 
+import com.example.mistvalerpg.soul.SoulCrystalEntity;
 import com.example.mistvalerpg.spirit.SpiritEntity;
 
 import net.minecraft.core.registries.Registries;
@@ -26,6 +27,15 @@ public final class ModEntities {
                     .updateInterval(2)
                     .fireImmune()
                     .build("spirit"));
+
+    /** The floating Soul Crystal. Not alive, so it needs no attributes; it only has a size and a soul. */
+    public static final DeferredHolder<EntityType<?>, EntityType<SoulCrystalEntity>> SOUL_CRYSTAL = ENTITIES.register("soul_crystal",
+            () -> EntityType.Builder.<SoulCrystalEntity>of(SoulCrystalEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F)
+                    .clientTrackingRange(8)
+                    .updateInterval(Integer.MAX_VALUE) // it never moves, so nobody needs position updates
+                    .fireImmune()
+                    .build("soul_crystal"));
 
     // Every mob needs a list of "attributes" (health, speed, ...) before it can exist in the world.
     public static void onAttributes(EntityAttributeCreationEvent event) {

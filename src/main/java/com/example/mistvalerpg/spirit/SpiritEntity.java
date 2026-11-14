@@ -4,15 +4,18 @@ import org.jetbrains.annotations.Nullable;
 
 import com.example.mistvalerpg.ModEntities;
 import com.example.mistvalerpg.ModSounds;
+import com.example.mistvalerpg.dialogue.DialogueManager;
+import com.example.mistvalerpg.dialogue.DialogueScene;
+import com.example.mistvalerpg.dialogue.DialogueScenes;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
@@ -36,8 +39,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * The Spirit of Mistvale: a small floating flame-spirit who guides the player through the story.
  *
  * She hovers in place, always turns to face the nearest player, blinks and sneezes now and then,
- * and has a talking animation for every mood. For now she only reacts when you right-click her;
- * the dialogue system will later decide what she says and which mood she is in.
+ * and has a talking animation for every mood. Right-click her and she starts a conversation
+ * (see the dialogue package), which also decides which mood she is in.
  */
 public class SpiritEntity extends PathfinderMob implements GeoEntity {
     // The moods she can talk in. -1 means "not talking".
@@ -158,18 +161,18 @@ public class SpiritEntity extends PathfinderMob implements GeoEntity {
         }
     }
 
-    // Right-click. The real conversation arrives with the dialogue system; for now she greets you.
+    // Right-click. A player who has never met her gets the first meeting; everyone else gets a short hello.
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (vanishTicks >= 0) {
             return InteractionResult.PASS;
         }
-        if (!level().isClientSide()) {
-            talk(MOOD_HAPPY, 60);
+        if (!level().isClientSide() && player instanceof ServerPlayer serverPlayer && !DialogueManager.isTalking(serverPlayer)) {
+            DialogueScene scene = DialogueManager.hasSeen(serverPlayer, DialogueScenes.FIRST_MEETING) ? DialogueScenes.AGAIN : DialogueScenes.FIRST_MEETING;
             triggerAnim("main", "spin_up");
             level().playSound(null, blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.NEUTRAL, 0.5F, 1.5F);
             ((ServerLevel) level()).sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.0, getZ(), 10, 0.5, 0.6, 0.5, 0.0);
-            player.displayClientMessage(Component.translatable("message.mistvale_rpg.spirit.greeting"), true);
+            DialogueManager.start(serverPlayer, scene, this);
         }
         return InteractionResult.sidedSuccess(level().isClientSide());
     }

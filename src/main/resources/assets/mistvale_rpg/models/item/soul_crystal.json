@@ -1,0 +1,59 @@
+{
+  "parent": "mistvale_rpg:item/soul_crystal_helvar",
+  "overrides": [
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.0
+      },
+      "model": "mistvale_rpg:item/soul_crystal_helvar"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.1
+      },
+      "model": "mistvale_rpg:item/soul_crystal_ignis"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.2
+      },
+      "model": "mistvale_rpg:item/soul_crystal_scylla"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.3
+      },
+      "model": "mistvale_rpg:item/soul_crystal_nerakyss"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.4
+      },
+      "model": "mistvale_rpg:item/soul_crystal_skor"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.5
+      },
+      "model": "mistvale_rpg:item/soul_crystal_ashlord"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.6
+      },
+      "model": "mistvale_rpg:item/soul_crystal_sirok"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.7
+      },
+      "model": "mistvale_rpg:item/soul_crystal_ender_dragon"
+    },
+    {
+      "predicate": {
+        "mistvale_rpg:soul": 0.8
+      },
+      "model": "mistvale_rpg:item/soul_crystal_apostle"
+    }
+  ]
+}

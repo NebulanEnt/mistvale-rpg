@@ -1,0 +1,289 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "mistvale_rpg:block/charged_soul_block",
+    "frame": "mistvale_rpg:block/charged_soul_block",
+    "r0": "mistvale_rpg:block/rune/helvar_0",
+    "r1": "mistvale_rpg:block/rune/helvar_1",
+    "r2": "mistvale_rpg:block/rune/helvar_2",
+    "r3": "mistvale_rpg:block/rune/helvar_3",
+    "r4": "mistvale_rpg:block/rune/helvar_4",
+    "r5": "mistvale_rpg:block/rune/helvar_5"
+  },
+  "elements": [
+    {
+      "name": "core",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#frame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "north"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#frame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "east"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#frame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#frame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#frame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "up"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#frame",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "name": "rune north",
+      "from": [
+        -0.02,
+        -0.02,
+        -0.02
+      ],
+      "to": [
+        16.02,
+        16.02,
+        16.02
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#r0",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "north"
+        }
+      }
+    },
+    {
+      "name": "rune east",
+      "from": [
+        -0.02,
+        -0.02,
+        -0.02
+      ],
+      "to": [
+        16.02,
+        16.02,
+        16.02
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#r1",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "name": "rune south",
+      "from": [
+        -0.02,
+        -0.02,
+        -0.02
+      ],
+      "to": [
+        16.02,
+        16.02,
+        16.02
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#r2",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "south"
+        }
+      }
+    },
+    {
+      "name": "rune west",
+      "from": [
+        -0.02,
+        -0.02,
+        -0.02
+      ],
+      "to": [
+        16.02,
+        16.02,
+        16.02
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#r3",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "west"
+        }
+      }
+    },
+    {
+      "name": "rune up",
+      "from": [
+        -0.02,
+        -0.02,
+        -0.02
+      ],
+      "to": [
+        16.02,
+        16.02,
+        16.02
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#r4",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "up"
+        }
+      }
+    },
+    {
+      "name": "rune down",
+      "from": [
+        -0.02,
+        -0.02,
+        -0.02
+      ],
+      "to": [
+        16.02,
+        16.02,
+        16.02
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#r5",
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          },
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

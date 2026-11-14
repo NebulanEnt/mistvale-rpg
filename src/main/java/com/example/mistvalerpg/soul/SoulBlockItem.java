@@ -29,6 +29,12 @@ public class SoulBlockItem extends BlockItem {
         return stack;
     }
 
+    /** The soul a stack holds. A plain /give has no note, so it counts as the default soul. */
+    public static SoulId soulOf(ItemStack stack) {
+        SoulId soul = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY).get(SoulId.PROPERTY);
+        return soul == null ? SoulId.HELVAR : soul;
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         BlockItemStateProperties saved = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
