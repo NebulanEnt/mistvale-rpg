@@ -17,5 +17,14 @@
       "mistvale_rpg:voice/spirit_d"
     ],
     "subtitle": "subtitles.mistvale_rpg.spirit_voice"
+  },
+  "player_voice": {
+    "sounds": [
+      "mistvale_rpg:voice/player_a",
+      "mistvale_rpg:voice/player_b",
+      "mistvale_rpg:voice/player_c",
+      "mistvale_rpg:voice/player_d"
+    ],
+    "subtitle": "subtitles.mistvale_rpg.player_voice"
   }
 }

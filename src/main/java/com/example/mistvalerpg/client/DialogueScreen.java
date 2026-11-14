@@ -1,7 +1,10 @@
 package com.example.mistvalerpg.client;
 
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -9,22 +12,29 @@ import com.example.mistvalerpg.MistvaleRpg;
 import com.example.mistvalerpg.dialogue.DialogueNode;
 import com.example.mistvalerpg.dialogue.DialoguePayloads;
 import com.example.mistvalerpg.dialogue.DialogueScene;
+import com.example.mistvalerpg.dialogue.DialogueSpeaker;
+import com.mojang.blaze3d.platform.NativeImage;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The dialogue box: a small old pixel-RPG text box low on the left of the screen, with a square portrait
  * beside it, a name plate on its top edge, three lines of text that type themselves in with little voice
  * sounds, and the answers stacked small on the right-hand side of the screen.
+ *
+ * While somebody talks, their portrait opens and closes its mouth (a second picture, "_talk") eight times a second;
+ * the player's portrait is a live picture of their own character that nods along.
  *
  * The text panel is old pixel paper; the answers are navy plates. A long text is cut into pages of three lines. Space, Enter or a click first finishes the typing, then turns the page,
  * then moves on. Number keys, W/S or the arrow keys and a click pick an answer.
@@ -44,6 +54,7 @@ public class DialogueScreen extends Screen {
     private static final int MARGIN = 12;          // space between the portrait and the left edge of the screen
     private static final int FRAME_SIZE = 54;      // the portrait frame is a 54 x 54 square
     private static final int PANEL_HEIGHT = 54;    // the text panel is exactly as tall as the portrait frame
+    private static final int PORTRAIT_SIZE = 46;    // the picture inside the frame
     private static final int LINE_HEIGHT = 10;
     private static final int PAGE_LINES = 3;
     private static final float CHOICE_SCALE = 0.55F; // the answers are drawn at about half size, tucked into the corner
@@ -51,6 +62,11 @@ public class DialogueScreen extends Screen {
     private static final int TEXT_COLOUR = 0x3B2A1A;        // dark brown ink on the paper
     private static final int CHOICE_COLOUR = 0xD9D2C0;
     private static final int CHOICE_HOVER_COLOUR = 0xFFFFFF;
+    private static final String LONG_BREATH = ".!?\u2026";   // . ! ? and the ellipsis character
+    private static final String SHORT_BREATH = ",;:\u2014";  // , ; : and the long dash
+
+    // The five shades of the dark square behind a live portrait, outermost first.
+    private static final int[] VIGNETTE = { 0xFF111626, 0xFF1A2038, 0xFF242C56, 0xFF30406F, 0xFF3B4D83 };
 
     private DialogueScene scene;
     private DialogueNode node;
@@ -59,10 +75,11 @@ public class DialogueScreen extends Screen {
     private int page;
     private int pages = 1;
     private int totalChars;
+    private float[] appearAt = new float[0];   // for every character of the page: the second (counted from the page start) when it appears
+    private long startNanos;    // when the page started typing
+    private boolean skip;       // the player asked for the rest of the page at once
     private int shown;          // how many characters of the page are visible so far
-    private float speedBank;    // typing speed is 1.6 characters per tick: this collects the fractions
-    private int pause;          // ticks to wait after a full stop or comma
-    private int bipCounter;
+    private int lastShown;      // how many were visible at the last tick, to know which ones are new
     private int selected;       // the answer the keyboard is pointing at
     private boolean waiting;    // we told the server what the player did and are waiting for the next box
     private boolean closedByServer;
@@ -77,6 +94,9 @@ public class DialogueScreen extends Screen {
     private int frameX;
     private final List<int[]> choiceBoxes = new ArrayList<>();           // {x, y, width, height} in the small (scaled) units
     private final List<List<String>> choiceLines = new ArrayList<>();
+
+    private final Map<ResourceLocation, ResourceLocation> talkCache = new HashMap<>();
+    private final Map<ResourceLocation, int[]> sizeCache = new HashMap<>();
 
     public DialogueScreen(DialogueScene scene, DialogueNode node) {
         super(Component.empty());
@@ -159,43 +179,75 @@ public class DialogueScreen extends Screen {
     private void startPage(int newPage) {
         page = newPage;
         shown = 0;
-        speedBank = 0.0F;
-        pause = 8;
-        bipCounter = 0;
+        lastShown = 0;
+        skip = false;
+        startNanos = System.nanoTime();
         lines = allLines.subList(Math.min(allLines.size(), page * PAGE_LINES), Math.min(allLines.size(), (page + 1) * PAGE_LINES));
         totalChars = lines.stream().mapToInt(String::length).sum();
+
+        // The typing schedule: the second at which each character appears. Every character takes 1 / speed seconds,
+        // and the old mod's breaths come after punctuation: a long one after . ! ? and the ellipsis, a short one after , ; : and the dash.
+        // No breath when the next character is punctuation too, so "..." does not take forever.
+        appearAt = new float[totalChars];
+        float perChar = 1.0F / Math.max(4, node.speaker().voice().charsPerSecond());
+        float time = 0.0F;
+        for (int i = 0; i < totalChars; i++) {
+            time += perChar;
+            char c = charAt(i);
+            char following = i + 1 < totalChars ? charAt(i + 1) : ' ';
+            if (SHORT_BREATH.indexOf(following) < 0 && LONG_BREATH.indexOf(following) < 0) {
+                if (LONG_BREATH.indexOf(c) >= 0) {
+                    time += 0.3F;
+                } else if (SHORT_BREATH.indexOf(c) >= 0) {
+                    time += 0.13F;
+                }
+            }
+            appearAt[i] = time;
+        }
     }
 
     // ---- Typing ----
 
+    // Seconds since the page started typing (or "forever" once the player skipped ahead).
+    private float elapsed() {
+        return skip ? Float.MAX_VALUE : (System.nanoTime() - startNanos) / 1.0E9F;
+    }
+
+    // How many characters should be visible right now.
+    private int visible() {
+        float time = elapsed();
+        int count = 0;
+        while (count < totalChars && appearAt[count] <= time) {
+            count++;
+        }
+        return count;
+    }
+
     @Override
     public void tick() {
         age++;
-        if (waiting || shown >= totalChars) {
+        if (waiting) {
             return;
         }
-        if (pause > 0) {
-            pause--;
-            return;
-        }
-        speedBank += 1.6F;
-        while (speedBank >= 1.0F && shown < totalChars) {
-            speedBank -= 1.0F;
-            char c = charAt(shown);
-            shown++;
-            if (!Character.isWhitespace(c) && ++bipCounter % 2 == 0) {
-                float pitch = node.emotion().voicePitch() * (0.92F + 0.2F * minecraft.level.random.nextFloat());
-                minecraft.getSoundManager().play(SimpleSoundInstance.forUI(node.speaker().voice(), pitch, 0.6F));
+        shown = visible();
+        if (shown > lastShown) {
+            DialogueSpeaker.Voice voice = node.speaker().voice();
+            // One bip for the newly appeared letters, if one of them sits on a bip position (every second one).
+            for (int i = lastShown; i < shown; i++) {
+                if (Character.isLetterOrDigit(charAt(i)) && i % Math.max(1, voice.interval()) == 0) {
+                    bip(voice);
+                    break;
+                }
             }
-            // a short breath after punctuation
-            if (c == '.' || c == '!' || c == '?') {
-                pause = 7;
-                break;
-            } else if (c == ',' || c == ';' || c == ':') {
-                pause = 3;
-                break;
-            }
+            lastShown = shown;
         }
+    }
+
+    // One little voice sound. The pitch wobbles a little from bip to bip, so it sounds like speech and not a machine.
+    private void bip(DialogueSpeaker.Voice voice) {
+        float wobble = 1.0F + (minecraft.level.random.nextFloat() * 2.0F - 1.0F) * voice.variance();
+        float pitch = Mth.clamp(voice.pitch() * wobble, 0.5F, 2.0F);
+        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(voice.sound().get(), pitch, voice.volume()));
     }
 
     private char charAt(int index) {
@@ -222,15 +274,17 @@ public class DialogueScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!waiting) {
+            shown = visible();
+        }
         graphics.blitSprite(PANEL, panelX, panelY, panelWidth, PANEL_HEIGHT);
 
-        // portrait: frame first, then the picture inside it, with a tiny bounce while the speaker is talking
+        // portrait: the frame first (its middle is a solid dark square), then the picture inside it
         graphics.blitSprite(PORTRAIT_FRAME, frameX, panelY, FRAME_SIZE, FRAME_SIZE);
-        int bounce = !typingDone() && (age / 3) % 2 == 0 ? -1 : 0;
-        graphics.blit(node.speaker().portrait(node.emotion()), frameX + 4, panelY + 4 + bounce, 46, 46, 0.0F, 0.0F, 128, 128, 128, 128);
+        drawPortrait(graphics, frameX + 4, panelY + 4, PORTRAIT_SIZE);
 
         // name plate on the top edge of the panel
-        Component name = node.speaker().displayName();
+        Component name = node.speaker().displayName(playerName());
         int plateWidth = font.width(name) + 22;
         graphics.blitSprite(PLATE, panelX + 8, panelY - 11, plateWidth, 16);
         graphics.drawString(font, name, panelX + 19, panelY - 6, 0xFFFFFF, false);
@@ -257,6 +311,103 @@ public class DialogueScreen extends Screen {
             int bob = (int) (Mth.sin(age * 0.3F) * 1.5F);
             graphics.blitSprite(ARROW, panelX + panelWidth - 22, panelY + PANEL_HEIGHT - 17 + bob, 11, 9);
         }
+    }
+
+    // ---- Portraits ----
+
+    // Draws the speaker's portrait in a square of the given size. While they are talking, the picture swaps eight times a second.
+    private void drawPortrait(GuiGraphics graphics, int x, int y, int size) {
+        boolean mouthOpen = !typingDone() && (int) (elapsed() * 8.0F) % 2 == 0;
+        if (node.speaker().isLive()) {
+            drawLivePlayer(graphics, x, y, size, mouthOpen);
+            return;
+        }
+        ResourceLocation base = node.speaker().portrait(node.emotion());
+        ResourceLocation picture = mouthOpen ? talkPicture(base) : base;
+        int[] pixels = pictureSize(picture);
+        graphics.blit(picture, x, y, size, size, 0.0F, 0.0F, pixels[0], pixels[1], pixels[0], pixels[1]);
+    }
+
+    // spirit_happy.png has an open-mouth twin called spirit_happy_talk.png. If a portrait has no twin, it just stays as it is.
+    private ResourceLocation talkPicture(ResourceLocation base) {
+        return talkCache.computeIfAbsent(base, key -> {
+            String path = key.getPath();
+            ResourceLocation twin = key.withPath(path.substring(0, path.length() - ".png".length()) + "_talk.png");
+            return minecraft.getResourceManager().getResource(twin).isPresent() ? twin : key;
+        });
+    }
+
+    // How many pixels wide and high a picture file is. The portraits are bigger than they are drawn, so we ask the file itself.
+    private int[] pictureSize(ResourceLocation picture) {
+        return sizeCache.computeIfAbsent(picture, key -> {
+            try (InputStream stream = minecraft.getResourceManager().open(key); NativeImage image = NativeImage.read(stream)) {
+                return new int[] { image.getWidth(), image.getHeight() };
+            } catch (Exception e) {
+                return new int[] { 64, 64 };
+            }
+        });
+    }
+
+    // The player's own character, drawn live on a softly moving mist-coloured backdrop. While they speak they nod a little.
+    private void drawLivePlayer(GuiGraphics graphics, int x, int y, int size, boolean nod) {
+        drawBackdrop(graphics, x, y, size, node.speaker().colour());
+        LivingEntity player = minecraft.player;
+        if (player == null) {
+            return;
+        }
+        double seconds = System.currentTimeMillis() / 1000.0;
+        float scale = size * (1.0F + 0.012F * (float) Math.sin(seconds * 1.7));       // slowly "breathes"
+        float lift = player.getEyeHeight() - 0.08F - player.getBbHeight() / 2.0F - 0.26F + 0.2F;
+        float turn = 0.45F + 0.16F * (float) Math.sin(seconds * 0.8);                 // slowly looks left and right
+        float tilt = 0.05F * (float) Math.sin(seconds * 0.55F) + (nod ? 0.06F : 0.0F);
+
+        graphics.enableScissor(x, y, x + size, y + size);
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsAngle(graphics, x, y, x + size, y + size, (int) scale, lift, turn, tilt, player);
+        } finally {
+            graphics.disableScissor();
+        }
+    }
+
+    // A dark vignette, two slow drifting beams of mist, a few rising sparks, a shade at the bottom and a glowing edge in the speaker's colour.
+    private void drawBackdrop(GuiGraphics graphics, int x, int y, int size, int rgb) {
+        double seconds = System.currentTimeMillis() / 1000.0;
+        for (int i = 0; i < VIGNETTE.length; i++) {
+            int inset = (int) ((VIGNETTE.length - 1 - i) * size * 0.085F);
+            graphics.fill(x + inset, y + inset, x + size - inset, y + size - inset, mix(VIGNETTE[i], 0xFF000000 | rgb, 0.12F + 0.05F * i));
+        }
+        graphics.enableScissor(x, y, x + size, y + size);
+        for (int beam = 0; beam < 2; beam++) {
+            double start = size * (0.15 + 0.5 * beam) + Math.sin(seconds * 0.5 + beam * 2.1) * size * 0.07;
+            int width = (int) (size * (beam == 0 ? 0.22 : 0.11));
+            for (int row = 0; row < size; row += 2) {
+                int left = (int) (start + row * 0.45);
+                graphics.fill(x + left, y + row, x + left + width, y + row + 2, beam == 0 ? 0x17E8F0D0 : 0x110C1F3F);
+            }
+        }
+        for (int i = 0; i < 9; i++) {
+            double rise = (seconds * (0.07 + 0.012 * i) + i * 0.173) % 1.0;
+            int px = (int) (i * 37 % 100 / 100.0 * size + Math.sin(seconds * 0.9 + i) * 3.0);
+            int py = (int) (size - rise * size);
+            int alpha = (int) (Math.sin(rise * Math.PI) * (70 + 18 * (i % 3)));
+            int dot = i % 4 == 0 ? 2 : 1;
+            graphics.fill(x + px, y + py, x + px + dot, y + py + dot, alpha << 24 | 0xFFE9C8);
+        }
+        for (int i = 0; i < 7; i++) {
+            graphics.fill(x, y + size - 1 - i * (size / 24), x + size, y + size - i * (size / 24), (34 + i * 10) << 24);
+        }
+        for (int i = 0; i < 3; i++) {
+            graphics.fill(x + i, y, x + i + 1, y + size, (68 - i * 22) << 24 | rgb & 0xFFFFFF);
+        }
+        graphics.disableScissor();
+    }
+
+    // Blends two colours: 0 is all of a, 1 is all of b.
+    private static int mix(int a, int b, float amount) {
+        int red = (int) ((a >> 16 & 0xFF) * (1.0F - amount) + (b >> 16 & 0xFF) * amount);
+        int green = (int) ((a >> 8 & 0xFF) * (1.0F - amount) + (b >> 8 & 0xFF) * amount);
+        int blue = (int) ((a & 0xFF) * (1.0F - amount) + (b & 0xFF) * amount);
+        return 0xFF000000 | red << 16 | green << 8 | blue;
     }
 
     // The answers are drawn at 55% size, so we shrink the drawing area and divide the mouse position by the same amount.
@@ -335,6 +486,7 @@ public class DialogueScreen extends Screen {
     // First press: show the rest of the text at once. Second: turn the page. After the last page: go on to the next box.
     private void advance(boolean fromKeyboard) {
         if (!typingDone()) {
+            skip = true;
             shown = totalChars;
             return;
         }

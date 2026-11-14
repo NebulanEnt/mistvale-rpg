@@ -16,13 +16,16 @@ import com.example.mistvalerpg.dialogue.DialogueNode.Choice;
  */
 public final class DialogueScenes {
     private static final DialogueSpeaker SPIRIT = DialogueSpeaker.SPIRIT;
+    private static final DialogueSpeaker PLAYER = DialogueSpeaker.PLAYER;
 
     /** The Spirit's very first talk with a new player. */
     public static final DialogueScene FIRST_MEETING = DialogueScene.builder("first_meeting", "hello")
             .say("hello", SPIRIT, Emotion.HAPPY, "who_am_i")
-            .say("who_am_i", SPIRIT, Emotion.NEUTRAL, "questions")
+            .say("who_am_i", SPIRIT, Emotion.NEUTRAL, "ask_me")
+            .say("ask_me", SPIRIT, Emotion.HAPPY, "questions")
             // A question the player can come back to as often as they like: every answer leads back here.
-            .ask("questions", SPIRIT, Emotion.NEUTRAL,
+            // The player is the one asking, so the box shows the player's own character, speaking.
+            .ask("questions", PLAYER, Emotion.NEUTRAL,
                     new Choice("where", List.of()),
                     new Choice("what_happened", List.of()),
                     new Choice("ready", List.of()))
@@ -30,7 +33,7 @@ public final class DialogueScenes {
             .say("what_happened", SPIRIT, Emotion.SAD, "the_note")
             .say("the_note", SPIRIT, Emotion.ANGRY, "questions")
             .say("ready", SPIRIT, Emotion.HAPPY, "which_way")
-            .ask("which_way", SPIRIT, Emotion.NEUTRAL,
+            .ask("which_way", PLAYER, Emotion.NEUTRAL,
                     new Choice("north", List.of(DialogueAction.CHOOSE_NORTH)),
                     new Choice("west", List.of(DialogueAction.CHOOSE_WEST)),
                     new Choice("south", List.of(DialogueAction.CHOOSE_SOUTH)),

@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
@@ -62,9 +63,11 @@ public class SoulCrystalRenderer extends EntityRenderer<SoulCrystalEntity> {
 
         BlockState state = MistvaleRpg.CHARGED_SOUL_BLOCK.get().defaultBlockState().setValue(SoulId.PROPERTY, soul);
         BlockRenderDispatcher blocks = Minecraft.getInstance().getBlockRenderer();
-        // Both kinds are drawn with the "moving block" paint, which can be see-through. The ghosts get an extra fade.
-        MultiBufferSource solid = type -> buffers.getBuffer(RenderType.translucentMovingBlock());
-        MultiBufferSource ghost = type -> new AlphaConsumer(buffers.getBuffer(RenderType.translucentMovingBlock()), GHOST_ALPHA);
+        // The real block is drawn SOLID, with the paint the game uses for solid things: it is drawn first and it writes
+        // depth, so the magic light behind it stays hidden. The two ghost cubes use our own see-through paint that never
+        // writes depth (see GhostRenderType), so a ghost face can never cut the solid block off. The ghosts get an extra fade.
+        MultiBufferSource solid = type -> buffers.getBuffer(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+        MultiBufferSource ghost = type -> new AlphaConsumer(buffers.getBuffer(GhostRenderType.CUBES), GHOST_ALPHA);
         Quaternionf tilt = new Quaternionf().setAngleAxis(TILT, SIN_QUARTER_PI, 0.0F, SIN_QUARTER_PI);
 
         pose.pushPose();

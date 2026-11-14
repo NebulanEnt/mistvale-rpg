@@ -52,8 +52,9 @@ public final class DialogueManager {
         SESSIONS.put(player.getUUID(), session);
         node.actions().forEach(action -> action.run(player));
         SpiritEntity spirit = spiritOf(player, session);
-        if (spirit != null && node.speaker() == DialogueSpeaker.SPIRIT) {
-            spirit.talk(node.emotion().spiritMood(), 200);
+        if (spirit != null) {
+            // Her model talks only while SHE is the one talking; when the player speaks she listens quietly.
+            spirit.talk(node.speaker() == DialogueSpeaker.SPIRIT ? node.emotion().spiritMood() : SpiritEntity.MOOD_NONE, 200);
         }
         PacketDistributor.sendToPlayer(player, new DialoguePayloads.ShowNode(session.scene().id(), node.id()));
     }
