@@ -1,6 +1,7 @@
 package com.example.mistvalerpg;
 
 import com.example.mistvalerpg.client.CagedSoulRenderer;
+import com.example.mistvalerpg.client.CinematicOverlay;
 import com.example.mistvalerpg.client.FadeOverlay;
 import com.example.mistvalerpg.client.RiftRenderer;
 import com.example.mistvalerpg.client.RiftSoulParticle;
@@ -58,11 +59,12 @@ public class MistvaleRpgClient {
         event.registerSpriteSet(ModParticles.RIFT_SOUL.get(), RiftSoulParticle.Provider::new);
     }
 
-    // The swirling screen effect while a rift pulls you through, and the cutscene fade, are drawn as layers above everything else.
+    // The swirling screen effect while a rift pulls you through, and the cutscene effects, are drawn as layers above everything else.
     @SubscribeEvent
     static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "warp"), WarpOverlay::render);
-        // The cutscene fade goes on last, so it covers even the warp effect.
+        // The film bars and subtitles, then the fade on top of them, so a fade to black covers the bars too.
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cinematic"), CinematicOverlay::render);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "fade"), FadeOverlay::render);
     }
 }

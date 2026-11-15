@@ -3,6 +3,8 @@ package com.example.mistvalerpg.cutscene;
 import com.example.mistvalerpg.MistvaleRpg;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -27,6 +29,42 @@ public final class CutscenePayloads {
                 ByteBufCodecs.VAR_INT, Fade::out,
                 ByteBufCodecs.VAR_INT, Fade::color,
                 Fade::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /**
+     * Server to player: slide the black film bars in (or out) at the top and bottom of the screen.
+     * While they are in, the normal heads-up display (hearts, hotbar, crosshair) is hidden.
+     */
+    public record Bars(boolean on) implements CustomPacketPayload {
+        public static final Type<Bars> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cutscene_bars"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Bars> CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL, Bars::on,
+                Bars::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /**
+     * Server to player: show a line of text in the middle of the screen. It fades in over {@code in} ticks,
+     * stays for {@code hold}, and fades out over {@code out}. The text is a {@link Component}, so it can be
+     * plain words or the name of a line in the language file.
+     */
+    public record Subtitle(Component text, int in, int hold, int out) implements CustomPacketPayload {
+        public static final Type<Subtitle> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cutscene_subtitle"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Subtitle> CODEC = StreamCodec.composite(
+                ComponentSerialization.STREAM_CODEC, Subtitle::text,
+                ByteBufCodecs.VAR_INT, Subtitle::in,
+                ByteBufCodecs.VAR_INT, Subtitle::hold,
+                ByteBufCodecs.VAR_INT, Subtitle::out,
+                Subtitle::new);
 
         @Override
         public Type<? extends CustomPacketPayload> type() {

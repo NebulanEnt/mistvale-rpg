@@ -9,6 +9,7 @@ import com.example.mistvalerpg.dialogue.DialogueScenes;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.spirit.SpiritEntity;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -32,6 +33,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale dialogue <scene>                              plays a conversation for you
  *   /mistvale dialogue reset                                makes the Spirit forget you (clears seen scenes and your chosen land)
  *   /mistvale cutscene fade <in> <hold> <out>               fades your screen to black and back (times in ticks, 20 = 1 second)
+ *   /mistvale cutscene bars <on|off>                        slides the film bars in or out
+ *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
  */
 public final class ModCommands {
 
@@ -65,13 +68,35 @@ public final class ModCommands {
                         .then(Commands.argument("in", IntegerArgumentType.integer(0, 600))
                                 .then(Commands.argument("hold", IntegerArgumentType.integer(0, 1200))
                                         .then(Commands.argument("out", IntegerArgumentType.integer(0, 600))
-                                                .executes(ModCommands::cutsceneFade)))));
+                                                .executes(ModCommands::cutsceneFade)))))
+                .then(Commands.literal("bars")
+                        .then(Commands.argument("on", BoolArgumentType.bool())
+                                .executes(ModCommands::cutsceneBars)))
+                .then(Commands.literal("subtitle")
+                        .then(Commands.argument("in", IntegerArgumentType.integer(0, 600))
+                                .then(Commands.argument("hold", IntegerArgumentType.integer(0, 1200))
+                                        .then(Commands.argument("out", IntegerArgumentType.integer(0, 600))
+                                                .then(Commands.argument("text", StringArgumentType.greedyString())
+                                                        .executes(ModCommands::cutsceneSubtitle))))));
     }
 
     private static int cutsceneFade(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         Cutscene.fade(player, IntegerArgumentType.getInteger(context, "in"), IntegerArgumentType.getInteger(context, "hold"),
                 IntegerArgumentType.getInteger(context, "out"), 0x000000);
+        return 1;
+    }
+
+    private static int cutsceneBars(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Cutscene.bars(context.getSource().getPlayerOrException(), BoolArgumentType.getBool(context, "on"));
+        return 1;
+    }
+
+    private static int cutsceneSubtitle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        Component text = Component.literal(StringArgumentType.getString(context, "text"));
+        Cutscene.subtitle(player, text, IntegerArgumentType.getInteger(context, "in"), IntegerArgumentType.getInteger(context, "hold"),
+                IntegerArgumentType.getInteger(context, "out"));
         return 1;
     }
 

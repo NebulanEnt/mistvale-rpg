@@ -1,5 +1,6 @@
 package com.example.mistvalerpg;
 
+import com.example.mistvalerpg.client.CinematicOverlay;
 import com.example.mistvalerpg.client.DialogueClient;
 import com.example.mistvalerpg.client.FadeOverlay;
 import com.example.mistvalerpg.client.WarpOverlay;
@@ -32,6 +33,8 @@ public final class ModNetwork {
 
         // Cutscenes: short messages that run film tricks on the player's screen.
         registrar.playToClient(CutscenePayloads.Fade.TYPE, CutscenePayloads.Fade.CODEC, (payload, context) -> FadeOverlay.onPacket(payload));
+        registrar.playToClient(CutscenePayloads.Bars.TYPE, CutscenePayloads.Bars.CODEC, (payload, context) -> CinematicOverlay.onBars(payload));
+        registrar.playToClient(CutscenePayloads.Subtitle.TYPE, CutscenePayloads.Subtitle.CODEC, (payload, context) -> CinematicOverlay.onSubtitle(payload));
     }
 
     private ModNetwork() {
