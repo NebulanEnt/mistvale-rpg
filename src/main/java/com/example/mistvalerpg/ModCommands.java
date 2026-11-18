@@ -23,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
@@ -36,6 +37,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene bars <on|off>                        slides the film bars in or out
  *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
  *   /mistvale cutscene shoulder <on|off>
+ *   /mistvale cutscene flight                               the camera circles around you once (about 8 seconds)
+ *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
  */
 public final class ModCommands {
 
@@ -81,7 +84,14 @@ public final class ModCommands {
                                                         .executes(ModCommands::cutsceneSubtitle))))))
                 .then(Commands.literal("shoulder")
                         .then(Commands.argument("on", BoolArgumentType.bool())
-                                .executes(ModCommands::cutsceneShoulder)));
+                                .executes(ModCommands::cutsceneShoulder)))
+                .then(Commands.literal("flight")
+                        .executes(ModCommands::cutsceneFlight))
+                .then(Commands.literal("stop")
+                        .executes(context -> {
+                            Cutscene.endShots(context.getSource().getPlayerOrException());
+                            return 1;
+                        }));
     }
 
     private static int cutsceneFade(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -106,6 +116,27 @@ public final class ModCommands {
         Component text = Component.literal(StringArgumentType.getString(context, "text"));
         Cutscene.subtitle(player, text, IntegerArgumentType.getInteger(context, "in"), IntegerArgumentType.getInteger(context, "hold"),
                 IntegerArgumentType.getInteger(context, "out"));
+        return 1;
+    }
+
+    // Eight queued flights that together circle the player once, one for every eighth of a turn. Each flight is a Bezier curve
+    // whose two handles point along the circle, so the pieces join without a corner.
+    private static int cutsceneFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        Vec3 centre = player.position().add(0.0, 1.2, 0.0);   // look at the player's chest
+        double start = Math.toRadians(player.getYRot() + 90.0);
+        int steps = 8;
+        double turn = Math.PI * 2.0 / steps;
+        double handle = 4.0 / 3.0 * Math.tan(turn / 4.0) * 5.0;   // how long the handles of a circular arc of radius 5 have to be
+        for (int i = 0; i < steps; i++) {
+            double a1 = start + turn * i;
+            double a2 = a1 + turn;
+            Vec3 from = centre.add(Math.cos(a1) * 5.0, 1.0, Math.sin(a1) * 5.0);
+            Vec3 to = centre.add(Math.cos(a2) * 5.0, 1.0, Math.sin(a2) * 5.0);
+            Vec3 control1 = from.add(-Math.sin(a1) * handle, 0.0, Math.cos(a1) * handle);   // along the circle, forwards
+            Vec3 control2 = to.add(Math.sin(a2) * handle, 0.0, -Math.cos(a2) * handle);     // along the circle, backwards
+            Cutscene.curve(player, from, control1, control2, to, centre, centre, 20, false, true);
+        }
         return 1;
     }
 
