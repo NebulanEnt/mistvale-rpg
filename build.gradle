@@ -32,6 +32,20 @@ repositories {
         name = 'GeckoLib'
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
+
+    // Modrinth publishes mods as Maven files, so mods from the pack can be used like any library.
+    // "exclusiveContent" makes Gradle ask Modrinth only for things in the group maven.modrinth.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 base {
@@ -122,6 +136,12 @@ configurations {
 dependencies {
     // GeckoLib draws our animated 3D models (the cage, the rifts and the Spirit).
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+
+    // Perspective API decides which camera the player has; we call it directly for the cutscene views.
+    // Leawind's Third Person is the camera mod built on it. We do not call its code, but the game needs it
+    // to exist when we ask for its over-the-shoulder camera, so it is added for the development client too.
+    implementation "maven.modrinth:perspective-api:${perspective_api_version}"
+    localRuntime "maven.modrinth:leawind-third-person:${leawind_third_person_version}"
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

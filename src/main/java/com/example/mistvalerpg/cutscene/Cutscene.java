@@ -25,6 +25,11 @@ public final class Cutscene {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Subtitle(text, in, hold, out));
     }
 
+    /** Puts the camera behind the player's shoulder and keeps it there ({@code true}), or gives the player their own camera back ({@code false}). */
+    public static void shoulderView(ServerPlayer player, boolean on) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.ShoulderView(on));
+    }
+
     private Cutscene() {
     }
 }

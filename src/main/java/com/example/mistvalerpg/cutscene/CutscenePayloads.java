@@ -72,6 +72,22 @@ public final class CutscenePayloads {
         }
     }
 
+    /**
+     * Server to player: put the camera behind the player's shoulder and keep it there ({@code on}),
+     * or give the player their own camera back.
+     */
+    public record ShoulderView(boolean on) implements CustomPacketPayload {
+        public static final Type<ShoulderView> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cutscene_shoulder"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ShoulderView> CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL, ShoulderView::on,
+                ShoulderView::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     private CutscenePayloads() {
     }
 }

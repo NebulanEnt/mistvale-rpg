@@ -35,6 +35,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene fade <in> <hold> <out>               fades your screen to black and back (times in ticks, 20 = 1 second)
  *   /mistvale cutscene bars <on|off>                        slides the film bars in or out
  *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
+ *   /mistvale cutscene shoulder <on|off>
  */
 public final class ModCommands {
 
@@ -77,7 +78,10 @@ public final class ModCommands {
                                 .then(Commands.argument("hold", IntegerArgumentType.integer(0, 1200))
                                         .then(Commands.argument("out", IntegerArgumentType.integer(0, 600))
                                                 .then(Commands.argument("text", StringArgumentType.greedyString())
-                                                        .executes(ModCommands::cutsceneSubtitle))))));
+                                                        .executes(ModCommands::cutsceneSubtitle))))))
+                .then(Commands.literal("shoulder")
+                        .then(Commands.argument("on", BoolArgumentType.bool())
+                                .executes(ModCommands::cutsceneShoulder)));
     }
 
     private static int cutsceneFade(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -89,6 +93,11 @@ public final class ModCommands {
 
     private static int cutsceneBars(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Cutscene.bars(context.getSource().getPlayerOrException(), BoolArgumentType.getBool(context, "on"));
+        return 1;
+    }
+
+    private static int cutsceneShoulder(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Cutscene.shoulderView(context.getSource().getPlayerOrException(), BoolArgumentType.getBool(context, "on"));
         return 1;
     }
 

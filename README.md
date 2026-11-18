@@ -46,6 +46,8 @@ The goal is not to add more content for its own sake. The goal is that exploring
 | NeoForge | 21.1.x |
 | Java | 21 |
 | [GeckoLib](https://github.com/bernie-g/geckolib) | 4.9.3 or newer 4.x for 1.21.1 |
+| [Perspective API](https://modrinth.com/mod/perspective-api) by Leawind | 1.5.0-beta or newer for 1.21.1 |
+| [Leawind's Third Person](https://modrinth.com/mod/leawind-third-person) | 3.0.0 or newer for 1.21.1 |
 
 ## Commands (for testing)
 
