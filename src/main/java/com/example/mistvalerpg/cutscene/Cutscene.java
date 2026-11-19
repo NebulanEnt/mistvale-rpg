@@ -22,6 +22,15 @@ public final class Cutscene {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Bars(on));
     }
 
+    /**
+     * Shows the title card of a scene in the bottom left corner: the small line types in, then the big line fades in, they
+     * stay, and both fade away. Times are in ticks: {@code delay} nothing shows yet, {@code step} the typing, the fade-in
+     * and the fade-out each take this long, {@code pause} is the wait after the typing, {@code hold} both stay after the fade-in. It is drawn above everything, even a black screen.
+     */
+    public static void title(ServerPlayer player, Component small, Component big, int delay, int step, int pause, int hold) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Title(small, big, delay, step, pause, hold));
+    }
+
     /** Shows a line of text in the middle of the player's screen. Times are in ticks. */
     public static void subtitle(ServerPlayer player, Component text, int in, int hold, int out) {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Subtitle(text, in, hold, out));

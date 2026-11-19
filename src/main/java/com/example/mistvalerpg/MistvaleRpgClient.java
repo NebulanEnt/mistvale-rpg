@@ -7,6 +7,7 @@ import com.example.mistvalerpg.client.RiftRenderer;
 import com.example.mistvalerpg.client.RiftSoulParticle;
 import com.example.mistvalerpg.client.SoulCrystalRenderer;
 import com.example.mistvalerpg.client.SpiritRenderer;
+import com.example.mistvalerpg.client.TitleCard;
 import com.example.mistvalerpg.client.WarpOverlay;
 
 import com.example.mistvalerpg.soul.SoulBlockItem;
@@ -66,5 +67,7 @@ public class MistvaleRpgClient {
         // The film bars and subtitles, then the fade on top of them, so a fade to black covers the bars too.
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cinematic"), CinematicOverlay::render);
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "fade"), FadeOverlay::render);
+        // The title card goes on top of the fade, because it is meant to be read on a black screen.
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "title"), TitleCard::render);
     }
 }

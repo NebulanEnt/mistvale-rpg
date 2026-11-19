@@ -164,6 +164,30 @@ public final class CutscenePayloads {
         }
     }
 
+    /**
+     * Server to player: the title card of a scene, "Somewhere in... / THE NORTH MARR LANDS". The small line types in letter
+     * by letter, then the big line fades in, they stay together, and then both fade out. All times are in ticks.
+     * {@code delay} is how long nothing shows, {@code step} is how long the typing takes and also how long the big line takes to
+     * fade in and how long both take to fade away, {@code pause} is the wait between the end of the typing and the start of
+     * the big line's fade-in, and {@code hold} is how long both stay after the big line has faded in.
+     */
+    public record Title(Component small, Component big, int delay, int step, int pause, int hold) implements CustomPacketPayload {
+        public static final Type<Title> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cutscene_title"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Title> CODEC = StreamCodec.composite(
+                ComponentSerialization.STREAM_CODEC, Title::small,
+                ComponentSerialization.STREAM_CODEC, Title::big,
+                ByteBufCodecs.VAR_INT, Title::delay,
+                ByteBufCodecs.VAR_INT, Title::step,
+                ByteBufCodecs.VAR_INT, Title::pause,
+                ByteBufCodecs.VAR_INT, Title::hold,
+                Title::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     private CutscenePayloads() {
     }
 }

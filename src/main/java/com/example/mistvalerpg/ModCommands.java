@@ -38,6 +38,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene fade <in> <hold> <out>               fades your screen to black and back (times in ticks, 20 = 1 second)
  *   /mistvale cutscene bars <on|off>                        slides the film bars in or out
  *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
+ *   /mistvale cutscene title <text>
  *   /mistvale cutscene shoulder <on|off>
  *   /mistvale cutscene flight                               the camera circles around you once (about 8 seconds)
  *   /mistvale cutscene demo                                 plays a little film that uses every tool so far
@@ -88,6 +89,9 @@ public final class ModCommands {
                 .then(Commands.literal("shoulder")
                         .then(Commands.argument("on", BoolArgumentType.bool())
                                 .executes(ModCommands::cutsceneShoulder)))
+                .then(Commands.literal("title")
+                        .then(Commands.argument("text", StringArgumentType.greedyString())
+                                .executes(ModCommands::cutsceneTitle)))
                 .then(Commands.literal("flight")
                         .executes(ModCommands::cutsceneFlight))
                 .then(Commands.literal("demo")
@@ -113,6 +117,15 @@ public final class ModCommands {
 
     private static int cutsceneShoulder(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Cutscene.shoulderView(context.getSource().getPlayerOrException(), BoolArgumentType.getBool(context, "on"));
+        return 1;
+    }
+
+    // The title card on its own: two seconds of black, then the card, then the screen comes back.
+    private static int cutsceneTitle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        Cutscene.fade(player, 10, 150, 20, 0x000000);
+        Later.after(context.getSource().getServer(), 10, () -> Cutscene.title(player, Component.translatable("scene.mistvale_rpg.somewhere_in"),
+                Component.literal(StringArgumentType.getString(context, "text")), 40, 20, 20, 40));
         return 1;
     }
 

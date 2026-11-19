@@ -5,6 +5,7 @@ import com.example.mistvalerpg.client.CinematicOverlay;
 import com.example.mistvalerpg.client.DialogueClient;
 import com.example.mistvalerpg.client.FocusCamera;
 import com.example.mistvalerpg.client.FadeOverlay;
+import com.example.mistvalerpg.client.TitleCard;
 import com.example.mistvalerpg.client.ViewControl;
 import com.example.mistvalerpg.client.WarpOverlay;
 import com.example.mistvalerpg.cutscene.CutscenePayloads;
@@ -37,6 +38,7 @@ public final class ModNetwork {
         // Cutscenes: short messages that run film tricks on the player's screen.
         registrar.playToClient(CutscenePayloads.Fade.TYPE, CutscenePayloads.Fade.CODEC, (payload, context) -> FadeOverlay.onPacket(payload));
         registrar.playToClient(CutscenePayloads.Bars.TYPE, CutscenePayloads.Bars.CODEC, (payload, context) -> CinematicOverlay.onBars(payload));
+        registrar.playToClient(CutscenePayloads.Title.TYPE, CutscenePayloads.Title.CODEC, (payload, context) -> TitleCard.onPacket(payload));
         registrar.playToClient(CutscenePayloads.Subtitle.TYPE, CutscenePayloads.Subtitle.CODEC, (payload, context) -> CinematicOverlay.onSubtitle(payload));
         registrar.playToClient(CutscenePayloads.ShoulderView.TYPE, CutscenePayloads.ShoulderView.CODEC, (payload, context) -> ViewControl.onShoulder(payload));
         registrar.playToClient(CutscenePayloads.Shot.TYPE, CutscenePayloads.Shot.CODEC, (payload, context) -> CameraShots.onShot(payload));
