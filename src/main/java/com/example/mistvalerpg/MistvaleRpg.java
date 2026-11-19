@@ -2,6 +2,7 @@ package com.example.mistvalerpg;
 
 import org.slf4j.Logger;
 
+import com.example.mistvalerpg.cutscene.Later;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.soul.CagedSoulBlock;
@@ -135,6 +136,8 @@ public class MistvaleRpg {
         modEventBus.addListener(ModNetwork::register);           // every message between the server and the player's game
         NeoForge.EVENT_BUS.addListener(ModCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(SoulPlatform::onLevelTick);   // the soul platform's ritual steps
+        NeoForge.EVENT_BUS.addListener(Later::onServerTick);         // "do this in a moment": the timing of every cutscene
+        NeoForge.EVENT_BUS.addListener(Later::onServerStopped);
         // A player who logs out in the middle of a conversation must not stay "talking" forever.
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {

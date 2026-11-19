@@ -51,6 +51,27 @@ public final class Cutscene {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Shot(from, control1, control2, to, aimFrom, aimTo, ticks, smooth, queue));
     }
 
+    /**
+     * Circles the camera once around {@code centre}, looking at it, at a distance of {@code radius} and {@code height} above it.
+     * {@code startDegrees} is where the circle begins (0 = east, 90 = south). The whole circle takes {@code ticks} ticks.
+     * It is eight queued flights, one for every eighth of a turn. Each is a Bezier curve whose handles point along the circle,
+     * so the eight pieces join without a corner and the camera moves on a true circle at a steady speed.
+     */
+    public static void orbit(ServerPlayer player, Vec3 centre, double radius, double height, double startDegrees, int ticks) {
+        int steps = 8;
+        double turn = Math.PI * 2.0 / steps;
+        double handle = 4.0 / 3.0 * Math.tan(turn / 4.0) * radius;   // how long the handles of a circular arc have to be
+        for (int i = 0; i < steps; i++) {
+            double a1 = Math.toRadians(startDegrees) + turn * i;
+            double a2 = a1 + turn;
+            Vec3 from = centre.add(Math.cos(a1) * radius, height, Math.sin(a1) * radius);
+            Vec3 to = centre.add(Math.cos(a2) * radius, height, Math.sin(a2) * radius);
+            Vec3 control1 = from.add(-Math.sin(a1) * handle, 0.0, Math.cos(a1) * handle);   // along the circle, forwards
+            Vec3 control2 = to.add(Math.sin(a2) * handle, 0.0, -Math.cos(a2) * handle);     // along the circle, backwards
+            curve(player, from, control1, control2, to, centre, centre, ticks / steps, false, true);
+        }
+    }
+
     /** Gives the player their own view back and lets them move again. */
     public static void endShots(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.EndShots());

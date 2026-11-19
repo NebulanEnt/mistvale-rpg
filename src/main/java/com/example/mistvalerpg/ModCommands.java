@@ -3,6 +3,7 @@ package com.example.mistvalerpg;
 import java.util.Arrays;
 
 import com.example.mistvalerpg.cutscene.Cutscene;
+import com.example.mistvalerpg.cutscene.Later;
 import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.dialogue.DialogueScene;
 import com.example.mistvalerpg.dialogue.DialogueScenes;
@@ -22,6 +23,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -38,6 +40,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
  *   /mistvale cutscene shoulder <on|off>
  *   /mistvale cutscene flight                               the camera circles around you once (about 8 seconds)
+ *   /mistvale cutscene demo                                 plays a little film that uses every tool so far
  *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
  */
 public final class ModCommands {
@@ -87,6 +90,8 @@ public final class ModCommands {
                                 .executes(ModCommands::cutsceneShoulder)))
                 .then(Commands.literal("flight")
                         .executes(ModCommands::cutsceneFlight))
+                .then(Commands.literal("demo")
+                        .executes(ModCommands::cutsceneDemo))
                 .then(Commands.literal("stop")
                         .executes(context -> {
                             Cutscene.endShots(context.getSource().getPlayerOrException());
@@ -123,20 +128,26 @@ public final class ModCommands {
     // whose two handles point along the circle, so the pieces join without a corner.
     private static int cutsceneFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        Vec3 centre = player.position().add(0.0, 1.2, 0.0);   // look at the player's chest
-        double start = Math.toRadians(player.getYRot() + 90.0);
-        int steps = 8;
-        double turn = Math.PI * 2.0 / steps;
-        double handle = 4.0 / 3.0 * Math.tan(turn / 4.0) * 5.0;   // how long the handles of a circular arc of radius 5 have to be
-        for (int i = 0; i < steps; i++) {
-            double a1 = start + turn * i;
-            double a2 = a1 + turn;
-            Vec3 from = centre.add(Math.cos(a1) * 5.0, 1.0, Math.sin(a1) * 5.0);
-            Vec3 to = centre.add(Math.cos(a2) * 5.0, 1.0, Math.sin(a2) * 5.0);
-            Vec3 control1 = from.add(-Math.sin(a1) * handle, 0.0, Math.cos(a1) * handle);   // along the circle, forwards
-            Vec3 control2 = to.add(Math.sin(a2) * handle, 0.0, -Math.cos(a2) * handle);     // along the circle, backwards
-            Cutscene.curve(player, from, control1, control2, to, centre, centre, 20, false, true);
-        }
+        Vec3 chest = player.position().add(0.0, 1.2, 0.0);
+        Cutscene.orbit(player, chest, 5.0, 1.0, player.getYRot() + 90.0, 160);
+        return 1;
+    }
+
+    // A little film made of every tool so far, with the moments of it laid out on a timeline (20 ticks = 1 second).
+    private static int cutsceneDemo(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        MinecraftServer server = context.getSource().getServer();
+        Vec3 chest = player.position().add(0.0, 1.2, 0.0);
+
+        Cutscene.bars(player, true);
+        Cutscene.fade(player, 0, 10, 30, 0x000000);                    // start black and fade up
+        Cutscene.orbit(player, chest, 5.0, 1.0, player.getYRot() + 90.0, 160);   // the camera circles for 8 seconds
+        Later.after(server, 30, () -> Cutscene.subtitle(player, Component.literal("A story begins."), 15, 80, 15));
+        Later.after(server, 165, () -> Cutscene.fade(player, 20, 25, 25, 0x000000));   // go black again...
+        Later.after(server, 185, () -> {                                // ...and while it is black, give everything back
+            Cutscene.endShots(player);
+            Cutscene.bars(player, false);
+        });
         return 1;
     }
 
