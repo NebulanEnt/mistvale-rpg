@@ -6,6 +6,7 @@ import com.example.mistvalerpg.client.FadeOverlay;
 import com.example.mistvalerpg.client.RiftRenderer;
 import com.example.mistvalerpg.client.RiftSoulParticle;
 import com.example.mistvalerpg.client.SoulCrystalRenderer;
+import com.example.mistvalerpg.client.BrannochRenderer;
 import com.example.mistvalerpg.client.SpiritRenderer;
 import com.example.mistvalerpg.client.TitleCard;
 import com.example.mistvalerpg.client.WarpOverlay;
@@ -51,6 +52,7 @@ public class MistvaleRpgClient {
         event.registerBlockEntityRenderer(ModBlockEntities.CAGED_SOUL.get(), context -> new CagedSoulRenderer());
         event.registerBlockEntityRenderer(ModBlockEntities.RIFT.get(), context -> new RiftRenderer());
         event.registerEntityRenderer(ModEntities.SPIRIT.get(), SpiritRenderer::new);
+        event.registerEntityRenderer(ModEntities.BRANNOCH.get(), BrannochRenderer::new);
         event.registerEntityRenderer(ModEntities.SOUL_CRYSTAL.get(), SoulCrystalRenderer::new);
     }
 

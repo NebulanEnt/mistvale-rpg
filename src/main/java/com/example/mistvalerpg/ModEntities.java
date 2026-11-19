@@ -1,5 +1,6 @@
 package com.example.mistvalerpg;
 
+import com.example.mistvalerpg.prologue.BrannochEntity;
 import com.example.mistvalerpg.soul.SoulCrystalEntity;
 import com.example.mistvalerpg.spirit.SpiritEntity;
 
@@ -28,6 +29,15 @@ public final class ModEntities {
                     .fireImmune()
                     .build("spirit"));
 
+    /** First Mate Brannoch, who talks to the player on the ship before the fight (see the prologue). */
+    public static final DeferredHolder<EntityType<?>, EntityType<BrannochEntity>> BRANNOCH = ENTITIES.register("brannoch",
+            () -> EntityType.Builder.of(BrannochEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.8F)
+                    .eyeHeight(1.62F)
+                    .clientTrackingRange(10)
+                    .updateInterval(2)
+                    .build("brannoch"));
+
     /** The floating Soul Crystal. Not alive, so it needs no attributes; it only has a size and a soul. */
     public static final DeferredHolder<EntityType<?>, EntityType<SoulCrystalEntity>> SOUL_CRYSTAL = ENTITIES.register("soul_crystal",
             () -> EntityType.Builder.<SoulCrystalEntity>of(SoulCrystalEntity::new, MobCategory.MISC)
@@ -40,6 +50,7 @@ public final class ModEntities {
     // Every mob needs a list of "attributes" (health, speed, ...) before it can exist in the world.
     public static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(SPIRIT.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20.0).build());
+        event.put(BRANNOCH.get(), Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20.0).build());
     }
 
     private ModEntities() {

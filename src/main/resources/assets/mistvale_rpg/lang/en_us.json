@@ -28,6 +28,7 @@
   "message.mistvale_rpg.soul_platform.fizzle": "The power drains away. The platform is broken.",
   "message.mistvale_rpg.rift.leads_nowhere": "This rift does not lead anywhere yet, so it spits you out at the world spawn.",
   "block.mistvale_rpg.rift": "Rift",
+  "entity.mistvale_rpg.brannoch": "First Mate Brannoch",
   "entity.mistvale_rpg.spirit": "Spirit of Mistvale",
   "item.mistvale_rpg.spirit_spawn_egg": "Spirit Spawn Egg",
   "subtitles.mistvale_rpg.rift_open": "A rift opens",
