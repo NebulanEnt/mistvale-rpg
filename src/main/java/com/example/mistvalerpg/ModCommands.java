@@ -7,6 +7,7 @@ import com.example.mistvalerpg.cutscene.Later;
 import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.dialogue.DialogueScene;
 import com.example.mistvalerpg.dialogue.DialogueScenes;
+import com.example.mistvalerpg.prologue.PrologueSea;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.spirit.SpiritEntity;
@@ -27,6 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -48,6 +50,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene flight                               the camera circles around you once (about 8 seconds)
  *   /mistvale cutscene demo                                 plays a little film that uses every tool so far
  *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
+ *   /mistvale prologue sea                                  sends you to the beach of your own private sea (takes you one if you have none)
+ *   /mistvale prologue leave                                gives your private sea back and sends you to the world spawn
  */
 public final class ModCommands {
 
@@ -60,6 +64,7 @@ public final class ModCommands {
                                         Arrays.stream(RiftVariant.values()).map(RiftVariant::getSerializedName), builder))
                                 .executes(context -> openRift(context, StringArgumentType.getString(context, "variant")))))
                 .then(cutsceneCommands())
+                .then(prologueCommands())
                 .then(Commands.literal("spirit")
                         .executes(ModCommands::summonSpirit))
                 .then(Commands.literal("dialogue")
@@ -120,6 +125,31 @@ public final class ModCommands {
                 .then(Commands.literal("stop")
                         .executes(context -> {
                             Cutscene.endShots(context.getSource().getPlayerOrException());
+                            return 1;
+                        }));
+    }
+
+    // The test commands for the prologue. They grow with every step of the prologue chapters.
+    private static LiteralArgumentBuilder<CommandSourceStack> prologueCommands() {
+        return Commands.literal("prologue")
+                .then(Commands.literal("sea")
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            if (!PrologueSea.toBeach(player)) {
+                                context.getSource().sendFailure(Component.literal("The game does not know the sea dimension."));
+                                return 0;
+                            }
+                            int slot = PrologueSea.slot(player);
+                            context.getSource().sendSuccess(() -> Component.literal("Your private sea is number " + slot + "."), false);
+                            return 1;
+                        }))
+                .then(Commands.literal("leave")
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            PrologueSea.release(player);
+                            ServerLevel overworld = player.server.overworld();
+                            BlockPos spawn = overworld.getSharedSpawnPos();
+                            player.teleportTo(overworld, spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0.0F, 0.0F);
                             return 1;
                         }));
     }

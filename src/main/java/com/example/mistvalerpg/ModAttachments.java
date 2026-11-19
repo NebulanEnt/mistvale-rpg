@@ -30,6 +30,13 @@ public final class ModAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** The number of the player's private sea in the prologue (see SeaSlots), or -1 while they have none. */
+    public static final Supplier<AttachmentType<Integer>> SEA_SLOT = ATTACHMENTS.register("sea_slot",
+            () -> AttachmentType.builder(() -> -1)
+                    .serialize(Codec.INT)
+                    .copyOnDeath()
+                    .build());
+
     private ModAttachments() {
     }
 }
