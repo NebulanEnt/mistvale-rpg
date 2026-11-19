@@ -188,6 +188,24 @@ public final class CutscenePayloads {
         }
     }
 
+    /**
+     * Server to player: turn the player's own view by {@code degrees} (positive = to the right, negative = to the left)
+     * over {@code ticks} ticks, smoothly: slow at the start, faster in the middle, slow at the end. It is how a film makes
+     * the player "look around".
+     */
+    public record Look(float degrees, int ticks) implements CustomPacketPayload {
+        public static final Type<Look> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cutscene_look"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Look> CODEC = StreamCodec.composite(
+                ByteBufCodecs.FLOAT, Look::degrees,
+                ByteBufCodecs.VAR_INT, Look::ticks,
+                Look::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     private CutscenePayloads() {
     }
 }

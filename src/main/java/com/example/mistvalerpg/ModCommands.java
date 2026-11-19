@@ -11,6 +11,7 @@ import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.spirit.SpiritEntity;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -38,6 +39,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene fade <in> <hold> <out>               fades your screen to black and back (times in ticks, 20 = 1 second)
  *   /mistvale cutscene bars <on|off>                        slides the film bars in or out
  *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
+ *   /mistvale cutscene look <degrees> <ticks>               turns your view to the right (or to the left, with a minus) over some ticks
  *   /mistvale cutscene title <text>
  *   /mistvale cutscene shoulder <on|off>
  *   /mistvale cutscene flight                               the camera circles around you once (about 8 seconds)
@@ -92,6 +94,14 @@ public final class ModCommands {
                 .then(Commands.literal("title")
                         .then(Commands.argument("text", StringArgumentType.greedyString())
                                 .executes(ModCommands::cutsceneTitle)))
+                .then(Commands.literal("look")
+                        .then(Commands.argument("degrees", FloatArgumentType.floatArg(-360.0F, 360.0F))
+                                .then(Commands.argument("ticks", IntegerArgumentType.integer(1, 600))
+                                        .executes(context -> {
+                                            Cutscene.look(context.getSource().getPlayerOrException(), FloatArgumentType.getFloat(context, "degrees"),
+                                                    IntegerArgumentType.getInteger(context, "ticks"));
+                                            return 1;
+                                        }))))
                 .then(Commands.literal("flight")
                         .executes(ModCommands::cutsceneFlight))
                 .then(Commands.literal("demo")

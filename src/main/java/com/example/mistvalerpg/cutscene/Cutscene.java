@@ -31,6 +31,11 @@ public final class Cutscene {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Title(small, big, delay, step, pause, hold));
     }
 
+    /** Turns the player's own view by {@code degrees} (positive = right, negative = left) over {@code ticks} ticks, smoothly. */
+    public static void look(ServerPlayer player, float degrees, int ticks) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Look(degrees, ticks));
+    }
+
     /** Shows a line of text in the middle of the player's screen. Times are in ticks. */
     public static void subtitle(ServerPlayer player, Component text, int in, int hold, int out) {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Subtitle(text, in, hold, out));
