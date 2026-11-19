@@ -8,6 +8,7 @@ import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.dialogue.DialogueScene;
 import com.example.mistvalerpg.dialogue.DialogueScenes;
 import com.example.mistvalerpg.prologue.PrologueSea;
+import com.example.mistvalerpg.prologue.PrologueShip;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.spirit.SpiritEntity;
@@ -51,6 +52,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene demo                                 plays a little film that uses every tool so far
  *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
  *   /mistvale prologue sea                                  sends you to the beach of your own private sea (takes you one if you have none)
+ *   /mistvale prologue ship                                 places the Kraken's ship in your private sea and puts you on its deck
  *   /mistvale prologue leave                                gives your private sea back and sends you to the world spawn
  */
 public final class ModCommands {
@@ -141,6 +143,23 @@ public final class ModCommands {
                             }
                             int slot = PrologueSea.slot(player);
                             context.getSource().sendSuccess(() -> Component.literal("Your private sea is number " + slot + "."), false);
+                            return 1;
+                        }))
+                .then(Commands.literal("ship")
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            ServerLevel sea = PrologueSea.level(player);
+                            if (sea == null) {
+                                context.getSource().sendFailure(Component.literal("The game does not know the sea dimension."));
+                                return 0;
+                            }
+                            int slot = PrologueSea.slot(player);
+                            if (!PrologueShip.placeShip(sea, slot)) {
+                                context.getSource().sendFailure(Component.literal("The ship could not be placed. Is Bosses'Rise installed? See the log."));
+                                return 0;
+                            }
+                            BlockPos deck = PrologueShip.deckSpawn(slot);
+                            player.teleportTo(sea, deck.getX() + 0.5, deck.getY(), deck.getZ() + 0.5, 180.0F, 4.0F);
                             return 1;
                         }))
                 .then(Commands.literal("leave")

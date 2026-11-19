@@ -156,6 +156,9 @@ dependencies {
     localRuntime "maven.modrinth:lets-do-farm-charm:${farm_and_charm_version}"
     localRuntime "maven.modrinth:curios:${curios_version}"
 
+    // Bosses'Rise: the ship, the pirates and the Kraken of the prologue. We name them by their ids and never call its code.
+    localRuntime "maven.modrinth:bossesrise:${bossesrise_version}"
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

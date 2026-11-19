@@ -49,6 +49,7 @@ The goal is not to add more content for its own sake. The goal is that exploring
 | [Perspective API](https://modrinth.com/mod/perspective-api) by Leawind | 1.5.0-beta or newer for 1.21.1 |
 | [Regions Unexplored](https://modrinth.com/mod/regions-unexplored) | 0.6 or newer for 1.21.1 |
 | [Let's Do Beachparty](https://modrinth.com/mod/lets-do-beachparty) | 2.1 or newer for 1.21.1 (it needs Architectury API and Let's Do Addon Compat) |
+| [Bosses'Rise](https://modrinth.com/mod/bossesrise) | 2.1 or newer for 1.21.1 |
 | [Leawind's Third Person](https://modrinth.com/mod/leawind-third-person) | 3.0.0 or newer for 1.21.1 |
 
 ## Commands (for testing)
@@ -63,7 +64,7 @@ These need operator permission (level 2).
 | `/mistvale cutscene fade <in> <hold> <out>` | Fades your screen to black and back. The three times are in ticks (20 ticks are one second). |
 | `/mistvale cutscene title <text>` | Two seconds of black, then the title card "Somewhere in..." and your text in the bottom left corner. |
 | `/mistvale cutscene look <degrees> <ticks>` | Turns your view to the right (or to the left, with a minus) over some ticks. |
-| `/mistvale prologue sea` | Sends you to the beach of your own private sea. `/mistvale prologue leave` gives the sea back and sends you to the world spawn. |
+| `/mistvale prologue sea` | Sends you to the beach of your own private sea. `/mistvale prologue ship` places the Kraken's ship there and puts you on its deck. `/mistvale prologue leave` sends you back to the world spawn. |
 | `/mistvale cutscene spawn [north\|west\|south\|east]` | Plays the arrival film: you are sent 50 blocks out from the world spawn to that land (the north if you do not say), and the Spirit welcomes you there. |
 
 ## Building from source
@@ -100,4 +101,5 @@ Copyright (c) 2026 NebulanEnt. **All rights reserved.** You are welcome to read 
 - Animations are powered by [GeckoLib](https://github.com/bernie-g/geckolib).
 - The tropical islands of the prologue sea use the *tropics* biome of [Regions Unexplored](https://modrinth.com/mod/regions-unexplored), made by Apollo and the Regions Unexplored team and MIT licensed.
 - The palm trees of the prologue sea are the palm trees of [Let's Do Beachparty](https://modrinth.com/mod/lets-do-beachparty) by satisfyu and Cristelknight (the Let's Do team).
+- The ship, the skeleton pirates and the Kraken of the prologue belong to [Bosses'Rise](https://modrinth.com/mod/bossesrise) by Block Factory Studio. Mistvale only places and directs them; it does not contain any of their files.
 - Minecraft is a trademark of Mojang Studios. This project is not affiliated with or endorsed by Mojang or Microsoft.
