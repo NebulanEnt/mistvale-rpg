@@ -31,19 +31,29 @@ public final class DialogueManager {
         return SESSIONS.containsKey(player.getUUID());
     }
 
+    /** True while any player is in a conversation with this speaker. The Spirit asks it, so she does not vanish in the middle of a talk. */
+    public static boolean isSpeaking(Entity speaker) {
+        return SESSIONS.values().stream().anyMatch(session -> session.speakerEntityId() == speaker.getId());
+    }
+
     public static boolean hasSeen(ServerPlayer player, DialogueScene scene) {
         return player.getData(ModAttachments.SEEN_SCENES).contains(scene.id());
     }
 
     /** Starts a scene. {@code speaker} is the Spirit (or whoever) standing there, so her 3D model can talk along; it may be null. */
     public static void start(ServerPlayer player, DialogueScene scene, @Nullable Entity speaker) {
+        start(player, scene, scene.start(), speaker);
+    }
+
+    /** The same, but beginning at the box called {@code nodeId} instead of the scene's usual first box. */
+    public static void start(ServerPlayer player, DialogueScene scene, String nodeId, @Nullable Entity speaker) {
         if (isTalking(player)) {
             return;
         }
         if (speaker != null) {
             Cutscene.focus(player, speaker);   // the camera swings round to the speaker, so the player is looking at her
         }
-        show(player, new Session(scene, scene.start(), speaker == null ? -1 : speaker.getId()));
+        show(player, new Session(scene, nodeId, speaker == null ? -1 : speaker.getId()));
     }
 
     // Shows one box: runs its actions, makes the Spirit's model talk in the right mood, and tells the player's game.

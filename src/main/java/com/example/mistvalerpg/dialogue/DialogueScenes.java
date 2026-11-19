@@ -52,9 +52,22 @@ public final class DialogueScenes {
             .say("mist", SPIRIT, Emotion.NEUTRAL, null)
             .build();
 
+    /**
+     * What she says when the player has just stepped out of the rift in the land they chose. There is one first box for
+     * every land ("hello_north", "hello_west", ...), because she names the land. After that all four share the same box.
+     */
+    public static final DialogueScene WELCOME = DialogueScene.builder("welcome", "hello_north")
+            .say("hello_north", SPIRIT, Emotion.HAPPY, "settle")
+            .say("hello_west", SPIRIT, Emotion.HAPPY, "settle")
+            .say("hello_south", SPIRIT, Emotion.HAPPY, "settle")
+            .say("hello_east", SPIRIT, Emotion.SCARED, "settle")
+            .say("settle", SPIRIT, Emotion.NEUTRAL, null)
+            .build();
+
     private static final Map<String, DialogueScene> ALL = Map.of(
             FIRST_MEETING.id(), FIRST_MEETING,
-            AGAIN.id(), AGAIN);
+            AGAIN.id(), AGAIN,
+            WELCOME.id(), WELCOME);
 
     @Nullable
     public static DialogueScene get(String id) {

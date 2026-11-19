@@ -58,7 +58,7 @@ public class SpiritEntity extends PathfinderMob implements GeoEntity {
     /** The spot she hovers around. */
     @Nullable
     private Vec3 anchor;
-    /** If above zero she is a visitor and vanishes when this runs out. */
+    /** If above zero she is a visitor and vanishes when this runs out. It only counts down while nobody is talking to her. */
     private int staysTicks = 0;
     private int vanishTicks = -1;
     private int talkTicks = 0;
@@ -125,7 +125,8 @@ public class SpiritEntity extends PathfinderMob implements GeoEntity {
         if (talkTicks > 0 && --talkTicks == 0) {
             entityData.set(TALK_MOOD, MOOD_NONE);
         }
-        if (staysTicks > 0 && --staysTicks == 0) {
+        // A visitor's clock only runs while nobody is talking to her. A conversation stops it, and when the conversation is over it runs on from where it stopped.
+        if (staysTicks > 0 && !DialogueManager.isSpeaking(this) && --staysTicks == 0) {
             vanish();
         }
         if (vanishTicks > 0 && --vanishTicks == 0) {
