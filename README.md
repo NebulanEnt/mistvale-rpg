@@ -11,7 +11,7 @@
   <img alt="Status: early development" src="https://img.shields.io/badge/status-early%20development-7FE6D6?style=flat-square">
   <img alt="License: All Rights Reserved" src="https://img.shields.io/badge/license-All%20Rights%20Reserved-lightgrey?style=flat-square">
 </p>
-
+ 
 ---
 
 ## What is Mistvale?
@@ -30,7 +30,7 @@ The goal is not to add more content for its own sake. The goal is that exploring
 - **Rifts.** Six rift variants (blue, orange, corrupted, white, end and deep) with their own opening, closing and crossing animations, sounds and screen effects. A rift starts pulling you the moment you touch it.
 - **The Spirit of Mistvale.** A hovering guide with its own model, voice and appearances. Her 3D model moves its mouth and changes mood along with her words.
 - **Dialogue.** An old-school RPG dialogue box with a portrait for every mood. The portrait opens its mouth while the speaker talks, and every speaker has their own voice: the text types out letter by letter with little breaths after punctuation. When you ask something, the box shows your own character, drawn live in front of a drifting mist backdrop, speaking in your own voice. Answers are picked with the mouse, the number keys or the arrow keys, and the game remembers your choices.
-- **Cutscene tools.** The first piece of the film toolkit the story is built on: a screen fade to black and back, with its own timing for going dark, staying dark and coming back. More tools (cinematic bars, subtitles, a flying film camera) are on the way.
+- **Cutscene tools and films.** The toolkit the story is filmed with: a fade to black and back, film bars that hide the heads-up display, subtitles, a title card that types itself in, a forced over-the-shoulder view (through Leawind's camera mods), a film camera that flies along smooth curves, and a way to make the player look around. The first finished film is the arrival: the Spirit sends you to the land you chose, a rift opens, you step out of it and she greets you.
 
 ## Coming next
 
@@ -59,6 +59,9 @@ These need operator permission (level 2).
 | `/mistvale spirit` | Summons the Spirit of Mistvale near you for a short visit. |
 | `/mistvale dialogue <scene>` | Plays a conversation. `/mistvale dialogue reset` makes the Spirit forget you. |
 | `/mistvale cutscene fade <in> <hold> <out>` | Fades your screen to black and back. The three times are in ticks (20 ticks are one second). |
+| `/mistvale cutscene title <text>` | Two seconds of black, then the title card "Somewhere in..." and your text in the bottom left corner. |
+| `/mistvale cutscene look <degrees> <ticks>` | Turns your view to the right (or to the left, with a minus) over some ticks. |
+| `/mistvale cutscene spawn [north\|west\|south\|east]` | Plays the arrival film: you are sent 50 blocks out from the world spawn to that land (the north if you do not say), and the Spirit welcomes you there. |
 
 ## Building from source
 

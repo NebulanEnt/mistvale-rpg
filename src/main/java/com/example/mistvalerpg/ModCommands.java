@@ -10,6 +10,8 @@ import com.example.mistvalerpg.dialogue.DialogueScenes;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.spirit.SpiritEntity;
+import com.example.mistvalerpg.story.Region;
+import com.example.mistvalerpg.story.SpawnScene;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -39,9 +41,10 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene fade <in> <hold> <out>               fades your screen to black and back (times in ticks, 20 = 1 second)
  *   /mistvale cutscene bars <on|off>                        slides the film bars in or out
  *   /mistvale cutscene subtitle <in> <hold> <out> <text>    shows a line of text in the middle of the screen
+ *   /mistvale cutscene spawn [north|west|south|east]        plays the whole arrival film: you are sent 50 blocks out from spawn to that land (north if you say nothing)
  *   /mistvale cutscene look <degrees> <ticks>               turns your view to the right (or to the left, with a minus) over some ticks
- *   /mistvale cutscene title <text>
- *   /mistvale cutscene shoulder <on|off>
+ *   /mistvale cutscene title <text>                         two seconds of black, then "Somewhere in..." and the text in the bottom left corner
+ *   /mistvale cutscene shoulder <on|off>                    forces the over-the-shoulder camera, or gives your camera back
  *   /mistvale cutscene flight                               the camera circles around you once (about 8 seconds)
  *   /mistvale cutscene demo                                 plays a little film that uses every tool so far
  *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
@@ -94,6 +97,14 @@ public final class ModCommands {
                 .then(Commands.literal("title")
                         .then(Commands.argument("text", StringArgumentType.greedyString())
                                 .executes(ModCommands::cutsceneTitle)))
+                .then(Commands.literal("spawn")
+                        .executes(context -> {
+                            SpawnScene.play(context.getSource().getPlayerOrException(), Region.NORTH);   // without a land: the north
+                            return 1;
+                        })
+                        .then(Commands.argument("region", StringArgumentType.word())
+                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(Region.values()).map(Region::id), builder))
+                                .executes(ModCommands::cutsceneSpawn)))
                 .then(Commands.literal("look")
                         .then(Commands.argument("degrees", FloatArgumentType.floatArg(-360.0F, 360.0F))
                                 .then(Commands.argument("ticks", IntegerArgumentType.integer(1, 600))
@@ -130,25 +141,6 @@ public final class ModCommands {
         return 1;
     }
 
-    // The title card on its own: two seconds of black, then the card, then the screen comes back.
-    private static int cutsceneTitle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        ServerPlayer player = context.getSource().getPlayerOrException();
-        Cutscene.fade(player, 10, 150, 20, 0x000000);
-        Later.after(context.getSource().getServer(), 10, () -> Cutscene.title(player, Component.translatable("scene.mistvale_rpg.somewhere_in"),
-                Component.literal(StringArgumentType.getString(context, "text")), 40, 20, 20, 40));
-        return 1;
-    }
-
-    private static int cutsceneSubtitle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        ServerPlayer player = context.getSource().getPlayerOrException();
-        Component text = Component.literal(StringArgumentType.getString(context, "text"));
-        Cutscene.subtitle(player, text, IntegerArgumentType.getInteger(context, "in"), IntegerArgumentType.getInteger(context, "hold"),
-                IntegerArgumentType.getInteger(context, "out"));
-        return 1;
-    }
-
-    // Eight queued flights that together circle the player once, one for every eighth of a turn. Each flight is a Bezier curve
-    // whose two handles point along the circle, so the pieces join without a corner.
     private static int cutsceneFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         Vec3 chest = player.position().add(0.0, 1.2, 0.0);
@@ -171,6 +163,34 @@ public final class ModCommands {
             Cutscene.endShots(player);
             Cutscene.bars(player, false);
         });
+        return 1;
+    }
+
+    // The spawn film for a land: "north", "west", "south" or "east".
+    private static int cutsceneSpawn(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Region region = Region.byId(StringArgumentType.getString(context, "region"));
+        if (region == null) {
+            context.getSource().sendFailure(Component.literal("The lands are north, west, south and east."));
+            return 0;
+        }
+        SpawnScene.play(context.getSource().getPlayerOrException(), region);
+        return 1;
+    }
+
+    // The title card on its own: two seconds of black, then the card, then the screen comes back.
+    private static int cutsceneTitle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        Cutscene.fade(player, 10, 220, 20, 0x000000);
+        Later.after(context.getSource().getServer(), 50, () -> Cutscene.title(player, Component.translatable("scene.mistvale_rpg.somewhere_in"),
+                Component.literal(StringArgumentType.getString(context, "text")), 20, 20, 40, 60));
+        return 1;
+    }
+
+    private static int cutsceneSubtitle(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        Component text = Component.literal(StringArgumentType.getString(context, "text"));
+        Cutscene.subtitle(player, text, IntegerArgumentType.getInteger(context, "in"), IntegerArgumentType.getInteger(context, "hold"),
+                IntegerArgumentType.getInteger(context, "out"));
         return 1;
     }
 

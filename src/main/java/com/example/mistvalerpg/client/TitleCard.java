@@ -42,9 +42,9 @@ public final class TitleCard {
     private static Component small;
     private static Component big;
     private static long startMs;
-    private static long delayMs;
-    private static long stepMs;
+    private static long typingMs;
     private static long pauseMs;
+    private static long fadeMs;
     private static long holdMs;
     private static int lettersHeard;                    // how many letters already made their sound
 
@@ -53,9 +53,9 @@ public final class TitleCard {
         small = packet.small();
         big = packet.big();
         startMs = System.currentTimeMillis();
-        delayMs = packet.delay() * 50L;
-        stepMs = Math.max(1L, packet.step() * 50L);
+        typingMs = Math.max(1L, packet.typing() * 50L);
         pauseMs = packet.pause() * 50L;
+        fadeMs = Math.max(1L, packet.fade() * 50L);
         holdMs = packet.hold() * 50L;
         lettersHeard = 0;
     }
@@ -66,24 +66,21 @@ public final class TitleCard {
             return;
         }
         long elapsed = System.currentTimeMillis() - startMs;
-        long bigStart = delayMs + stepMs + pauseMs;   // the big line starts after the typing and a pause
-        long holdEnd = bigStart + stepMs + holdMs;
-        if (elapsed >= holdEnd + stepMs) {
+        long bigStart = typingMs + pauseMs;           // the big line starts after the typing and a pause
+        long holdEnd = bigStart + fadeMs + holdMs;    // and stays, fully there, for the hold
+        if (elapsed >= holdEnd + fadeMs) {
             small = null; // finished
             return;
         }
-        if (elapsed < delayMs) {
-            return; // nothing yet
-        }
 
         // The whole card fades out at the end.
-        float outFade = elapsed < holdEnd ? 1.0F : 1.0F - (float) (elapsed - holdEnd) / stepMs;
+        float outFade = elapsed < holdEnd ? 1.0F : 1.0F - (float) (elapsed - holdEnd) / fadeMs;
         // The big line fades in after the small one has finished typing and the pause.
-        float bigFade = Mth.clamp((float) (elapsed - bigStart) / stepMs, 0.0F, 1.0F);
+        float bigFade = Mth.clamp((float) (elapsed - bigStart) / fadeMs, 0.0F, 1.0F);
 
         // The small line: as many letters as the time says, with a click for every new one.
         String words = small.getString();
-        int shown = Mth.clamp((int) ((elapsed - delayMs) * words.length() / stepMs), 0, words.length());
+        int shown = Mth.clamp((int) (elapsed * words.length() / typingMs), 0, words.length());
         while (lettersHeard < shown) {
             if (!Character.isWhitespace(words.charAt(lettersHeard))) {
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(TYPE_SOUND, 1.5F, 0.5F));

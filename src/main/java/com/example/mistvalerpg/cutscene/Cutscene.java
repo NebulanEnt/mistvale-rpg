@@ -22,13 +22,19 @@ public final class Cutscene {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Bars(on));
     }
 
+    /** Shows a line of text in the middle of the player's screen. Times are in ticks. */
+    public static void subtitle(ServerPlayer player, Component text, int in, int hold, int out) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Subtitle(text, in, hold, out));
+    }
+
     /**
      * Shows the title card of a scene in the bottom left corner: the small line types in, then the big line fades in, they
-     * stay, and both fade away. Times are in ticks: {@code delay} nothing shows yet, {@code step} the typing, the fade-in
-     * and the fade-out each take this long, {@code pause} is the wait after the typing, {@code hold} both stay after the fade-in. It is drawn above everything, even a black screen.
+     * stay, and both fade away. It starts at once. Times are in ticks: {@code typing} the typing, {@code pause} the wait after
+     * the typing, {@code fade} the fade-in of the big line and also the fade-out of both, {@code hold} both stay after the fade-in.
+     * It is drawn above everything, even a black screen.
      */
-    public static void title(ServerPlayer player, Component small, Component big, int delay, int step, int pause, int hold) {
-        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Title(small, big, delay, step, pause, hold));
+    public static void title(ServerPlayer player, Component small, Component big, int typing, int pause, int fade, int hold) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Title(small, big, typing, pause, fade, hold));
     }
 
     /** Turns the player's own view by {@code degrees} (positive = right, negative = left) over {@code ticks} ticks, smoothly. */
@@ -36,14 +42,14 @@ public final class Cutscene {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.Look(degrees, ticks));
     }
 
-    /** Shows a line of text in the middle of the player's screen. Times are in ticks. */
-    public static void subtitle(ServerPlayer player, Component text, int in, int hold, int out) {
-        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Subtitle(text, in, hold, out));
-    }
-
     /** Puts the camera behind the player's shoulder and keeps it there ({@code true}), or gives the player their own camera back ({@code false}). */
     public static void shoulderView(ServerPlayer player, boolean on) {
-        PacketDistributor.sendToPlayer(player, new CutscenePayloads.ShoulderView(on));
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.ShoulderView(on, false));
+    }
+
+    /** Lets go of the forced shoulder view, but leaves the player in it: the camera stays where it is, and the player may change it again. */
+    public static void keepShoulderView(ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.ShoulderView(false, true));
     }
 
     /**

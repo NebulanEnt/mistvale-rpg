@@ -42,8 +42,8 @@ public final class DialogueScenes {
             .say("west", SPIRIT, Emotion.HAPPY, "rift")
             .say("south", SPIRIT, Emotion.HAPPY, "rift")
             .say("east", SPIRIT, Emotion.SCARED, "rift")
-            // The rift opens the moment this box appears.
-            .say("rift", SPIRIT, Emotion.HAPPY, null, DialogueAction.OPEN_BLUE_RIFT)
+            // When this box is closed, the film begins: the player is sent to the land they chose.
+            .say("rift", SPIRIT, Emotion.HAPPY, null, DialogueAction.START_SPAWN_SCENE)
             .build();
 
     /** What she says to someone she has already met. */

@@ -45,7 +45,13 @@ public final class ViewControl {
             applyShoulder(minecraft);
         } else if (forced) {
             forced = false;
-            restore(minecraft);
+            if (packet.keep()) {
+                // The player stays in the shoulder view; we just forget what the camera was before.
+                typeBefore = null;
+                perspectiveBefore = null;
+            } else {
+                restore(minecraft);
+            }
         }
     }
 

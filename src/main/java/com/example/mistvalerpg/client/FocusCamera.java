@@ -39,6 +39,9 @@ public final class FocusCamera {
     private static float zoom;                                    // 0 = no zoom, 1 = fully zoomed
     private static float elapsed;                                 // how many ticks the turn has been going on
     private static boolean started;                               // true once we know from where the turn begins
+    private static boolean wasShot;                               // a film camera had the view in the last picture
+    private static long filmEndedMs = -100000L;                   // when the last film camera let go of the view
+    private static boolean afterFilm;                             // this turn began right after a film
     private static float startYaw;                                // the view when the turn began
     private static float startPitch;
     private static float viewYaw;                                 // where we have turned the view to so far
@@ -64,6 +67,11 @@ public final class FocusCamera {
     public static void onFrame(RenderFrameEvent.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
+        boolean shot = CameraShots.isActive();
+        if (wasShot && !shot) {
+            filmEndedMs = System.currentTimeMillis();
+        }
+        wasShot = shot;
         Entity entity = player == null || target == CutscenePayloads.Focus.RELEASE ? null : player.level().getEntity(target);
 
         // How much time has passed since the last picture, counted in ticks (a tick is 1/20 of a second).
@@ -71,7 +79,7 @@ public final class FocusCamera {
 
         // The zoom grows while we are looking at someone and fades away when we are not.
         zoom = Mth.clamp(zoom + (entity != null ? ZOOM_STEP : -ZOOM_STEP) * ticks, 0.0F, 1.0F);
-        if (entity == null || CameraShots.isActive()) {
+        if (entity == null || shot) {
             started = false;
             return; // nobody to look at (or a camera flight has the view): leave the player's view alone
         }
@@ -80,7 +88,13 @@ public final class FocusCamera {
         // over-the-shoulder view that is not the same as the player's own angles. (In the "front" view the camera looks back
         // at the player, so there we use the player's own angles.)
         Camera camera = minecraft.gameRenderer.getMainCamera();
-        boolean ownAngles = !camera.isInitialized() || minecraft.options.getCameraType().isMirrored();
+        // Right after a film, do not ask the camera: for a moment it still shows the last picture of the film, and the camera
+        // mod glides from there to its own view. We would turn from the wrong place, and the view would swing round to look at
+        // the player's own face. The player's own angles are what the camera mod starts from, so we use those.
+        if (!started) {
+            afterFilm = System.currentTimeMillis() - filmEndedMs < 3000L;
+        }
+        boolean ownAngles = afterFilm || !camera.isInitialized() || minecraft.options.getCameraType().isMirrored();
         Vec3 from = ownAngles ? player.getEyePosition() : camera.getPosition();
         float yaw = ownAngles ? player.getYRot() : camera.getYRot();
         float pitch = ownAngles ? player.getXRot() : camera.getXRot();
@@ -127,6 +141,7 @@ public final class FocusCamera {
         target = CutscenePayloads.Focus.RELEASE;
         zoom = 0.0F;
         started = false;
+        wasShot = false;
     }
 
     private FocusCamera() {

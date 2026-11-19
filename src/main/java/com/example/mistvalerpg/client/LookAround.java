@@ -16,12 +16,22 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * Turns the player's body and head by a given angle over a given time, on a smooth curve: how a film makes a character
  * "look around". The server only says how far and how long (see CutscenePayloads.Look). The turn is worked out before
  * every picture the game draws, so it is smooth however fast the screen is.
+ *
+ * The head leads and the body follows, like a person: the body stays where it is until the head is more than HEAD_LEAD
+ * degrees away from it, and then it is pulled along. A quarter turn is mostly the head, a half turn is the whole person.
+ *
+ * It is made for a scene with a film camera. While the film camera flies, the over-the-shoulder camera of Leawind's mod is
+ * switched off (see ViewControl.pause), and only then does the player's own direction mean what it says: that mod keeps a
+ * direction of its own while it is on, and turns the player back to it.
  */
 @EventBusSubscriber(modid = MistvaleRpg.MODID, value = Dist.CLIENT)
 public final class LookAround {
+    private static final float HEAD_LEAD = 30.0F;   // how far the head may turn away from the body before the body follows
+
     private static long startMs = -1L;   // -1 means no turn is going on
     private static long durationMs;
     private static float startYaw;       // where the player looked when the turn began
+    private static float startBody;      // where the player's body pointed when the turn began
     private static float degrees;        // how far to turn in all
 
     /** Called when the message from the server arrives. */
@@ -33,6 +43,7 @@ public final class LookAround {
         startMs = System.currentTimeMillis();
         durationMs = Math.max(1L, packet.ticks() * 50L);
         startYaw = player.getYRot();
+        startBody = player.yBodyRot;
         degrees = packet.degrees();
     }
 
@@ -57,6 +68,10 @@ public final class LookAround {
         player.yRotO = yaw;
         player.setYHeadRot(yaw);
         player.yHeadRotO = yaw;
+        // The body stays where it was, unless the head is more than HEAD_LEAD degrees away from it: then it trails the head by exactly that much.
+        float body = yaw + Mth.clamp(Mth.wrapDegrees(startBody - yaw), -HEAD_LEAD, HEAD_LEAD);
+        player.yBodyRot = body;
+        player.yBodyRotO = body;
         if (t >= 1.0F) {
             startMs = -1L;
         }

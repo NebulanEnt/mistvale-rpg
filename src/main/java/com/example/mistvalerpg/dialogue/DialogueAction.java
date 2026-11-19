@@ -3,12 +3,9 @@ package com.example.mistvalerpg.dialogue;
 import java.util.function.Consumer;
 
 import com.example.mistvalerpg.ModAttachments;
-import com.example.mistvalerpg.rift.RiftBlock;
-import com.example.mistvalerpg.rift.RiftVariant;
 import com.example.mistvalerpg.story.Region;
+import com.example.mistvalerpg.story.SpawnScene;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -20,8 +17,8 @@ public enum DialogueAction {
     CHOOSE_WEST(player -> choose(player, Region.WEST)),
     CHOOSE_SOUTH(player -> choose(player, Region.SOUTH)),
     CHOOSE_EAST(player -> choose(player, Region.EAST)),
-    /** The Spirit tears open a blue rift a few steps in front of the player. */
-    OPEN_BLUE_RIFT(DialogueAction::openBlueRift);
+    /** The Spirit sends the player to the land they chose. It is a little film: it starts when the conversation is closed. */
+    START_SPAWN_SCENE(SpawnScene::playAfterTalk);
 
     private final Consumer<ServerPlayer> effect;
 
@@ -35,12 +32,5 @@ public enum DialogueAction {
 
     private static void choose(ServerPlayer player, Region region) {
         player.setData(ModAttachments.REGION, region.id());
-    }
-
-    private static void openBlueRift(ServerPlayer player) {
-        Direction looking = player.getDirection();
-        BlockPos pos = player.blockPosition().relative(looking, 4);
-        // It faces the player so they can walk straight into it, and closes by itself after two minutes.
-        RiftBlock.spawn(player.serverLevel(), pos, looking.getOpposite(), RiftVariant.BLUE, null, 2400, true);
     }
 }
