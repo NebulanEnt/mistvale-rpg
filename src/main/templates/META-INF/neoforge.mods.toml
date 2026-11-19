@@ -126,6 +126,15 @@ versionRange="[0.6,)"
 ordering="AFTER"
 side="BOTH"
 
+# Let's Do Beachparty grows the palm trees on the prologue's islands. Its tree is named in the sea's JSON file.
+[[dependencies.${mod_id}]]
+modId="beachparty"
+type="required"
+reason="The palm trees on the islands of the prologue sea are its palm trees."
+versionRange="[2.1,)"
+ordering="AFTER"
+side="BOTH"
+
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
 # stop your mod loading on the server for example.

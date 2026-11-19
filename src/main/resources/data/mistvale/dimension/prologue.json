@@ -2,6 +2,9 @@
   "type": "mistvale:prologue",
   "generator": {
     "type": "mistvale:prologue",
+    "extra_features": [
+      "mistvale:prologue_palms"
+    ],
     "biome_source": {
       "type": "mistvale:prologue",
       "deep": "minecraft:deep_lukewarm_ocean",

@@ -48,6 +48,7 @@ The goal is not to add more content for its own sake. The goal is that exploring
 | [GeckoLib](https://github.com/bernie-g/geckolib) | 4.9.3 or newer 4.x for 1.21.1 |
 | [Perspective API](https://modrinth.com/mod/perspective-api) by Leawind | 1.5.0-beta or newer for 1.21.1 |
 | [Regions Unexplored](https://modrinth.com/mod/regions-unexplored) | 0.6 or newer for 1.21.1 |
+| [Let's Do Beachparty](https://modrinth.com/mod/lets-do-beachparty) | 2.1 or newer for 1.21.1 (it needs Architectury API and Let's Do Addon Compat) |
 | [Leawind's Third Person](https://modrinth.com/mod/leawind-third-person) | 3.0.0 or newer for 1.21.1 |
 
 ## Commands (for testing)
@@ -96,5 +97,6 @@ Copyright (c) 2026 NebulanEnt. **All rights reserved.** You are welcome to read 
 
 - Built on [NeoForge](https://neoforged.net/) for Minecraft by Mojang Studios.
 - Animations are powered by [GeckoLib](https://github.com/bernie-g/geckolib).
-- The tropical islands of the prologue sea use the *tropics* biome of [Regions Unexplored](https://modrinth.com/mod/regions-unexplored), made by the Regions Unexplored team and MIT licensed.
+- The tropical islands of the prologue sea use the *tropics* biome of [Regions Unexplored](https://modrinth.com/mod/regions-unexplored), made by Apollo and the Regions Unexplored team and MIT licensed.
+- The palm trees of the prologue sea are the palm trees of [Let's Do Beachparty](https://modrinth.com/mod/lets-do-beachparty) by satisfyu and Cristelknight (the Let's Do team).
 - Minecraft is a trademark of Mojang Studios. This project is not affiliated with or endorsed by Mojang or Microsoft.

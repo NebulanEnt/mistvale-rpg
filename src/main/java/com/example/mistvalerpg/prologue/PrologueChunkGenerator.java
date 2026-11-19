@@ -204,6 +204,7 @@ public final class PrologueChunkGenerator extends ChunkGenerator {
                 }
             }
         }
+        PrologueDecor.decorate(chunk);   // the dark spires
         return CompletableFuture.completedFuture(chunk);
     }
 }
