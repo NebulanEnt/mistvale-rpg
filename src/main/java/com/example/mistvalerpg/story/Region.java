@@ -36,7 +36,7 @@ public enum Region {
         return id;
     }
 
-    /** "North Marr Lands", "The Wild West", "Sandy Shores" or "The Morrows", in the player's language. */
+    /** "North Marr Lands", "The Wild West", "South Side Shores" or "The Hollows", in the player's language. */
     public Component displayName() {
         return Component.translatable("region.mistvale_rpg." + id);
     }

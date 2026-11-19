@@ -143,6 +143,12 @@ dependencies {
     implementation "maven.modrinth:perspective-api:${perspective_api_version}"
     localRuntime "maven.modrinth:leawind-third-person:${leawind_third_person_version}"
 
+    // Regions Unexplored: the sea's islands use its "tropics" biome. Its code is not called (the biome is named in a JSON file),
+    // but the game must know the biome, so it is added for the development client. TerraBlender and Lithostitched are the libraries it is built on.
+    localRuntime "maven.modrinth:regions-unexplored:${regions_unexplored_version}"
+    localRuntime "maven.modrinth:terrablender:${terrablender_version}"
+    localRuntime "maven.modrinth:lithostitched:${lithostitched_version}"
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

@@ -3,6 +3,7 @@ package com.example.mistvalerpg;
 import org.slf4j.Logger;
 
 import com.example.mistvalerpg.cutscene.Later;
+import com.example.mistvalerpg.prologue.PrologueRegistry;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.soul.CagedSoulBlock;
@@ -131,6 +132,7 @@ public class MistvaleRpg {
         ModSounds.SOUNDS.register(modEventBus);
         ModParticles.PARTICLES.register(modEventBus);
         ModAttachments.ATTACHMENTS.register(modEventBus);
+        PrologueRegistry.register(modEventBus);                  // the sea of the prologue: its ground and its biomes
 
         modEventBus.addListener(ModEntities::onAttributes);      // health and so on for the Spirit
         modEventBus.addListener(ModNetwork::register);           // every message between the server and the player's game

@@ -47,6 +47,7 @@ The goal is not to add more content for its own sake. The goal is that exploring
 | Java | 21 |
 | [GeckoLib](https://github.com/bernie-g/geckolib) | 4.9.3 or newer 4.x for 1.21.1 |
 | [Perspective API](https://modrinth.com/mod/perspective-api) by Leawind | 1.5.0-beta or newer for 1.21.1 |
+| [Regions Unexplored](https://modrinth.com/mod/regions-unexplored) | 0.6 or newer for 1.21.1 |
 | [Leawind's Third Person](https://modrinth.com/mod/leawind-third-person) | 3.0.0 or newer for 1.21.1 |
 
 ## Commands (for testing)
@@ -95,4 +96,5 @@ Copyright (c) 2026 NebulanEnt. **All rights reserved.** You are welcome to read 
 
 - Built on [NeoForge](https://neoforged.net/) for Minecraft by Mojang Studios.
 - Animations are powered by [GeckoLib](https://github.com/bernie-g/geckolib).
+- The tropical islands of the prologue sea use the *tropics* biome of [Regions Unexplored](https://modrinth.com/mod/regions-unexplored), made by the Regions Unexplored team and MIT licensed.
 - Minecraft is a trademark of Mojang Studios. This project is not affiliated with or endorsed by Mojang or Microsoft.

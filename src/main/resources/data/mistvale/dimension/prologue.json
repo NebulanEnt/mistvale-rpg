@@ -1,0 +1,14 @@
+{
+  "type": "mistvale:prologue",
+  "generator": {
+    "type": "mistvale:prologue",
+    "biome_source": {
+      "type": "mistvale:prologue",
+      "deep": "minecraft:deep_lukewarm_ocean",
+      "lagoon": "minecraft:warm_ocean",
+      "beach": "minecraft:beach",
+      "tropics": "regions_unexplored:tropics",
+      "jungle": "minecraft:sparse_jungle"
+    }
+  }
+}
