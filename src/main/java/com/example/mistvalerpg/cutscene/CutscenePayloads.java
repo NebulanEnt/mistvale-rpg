@@ -147,6 +147,23 @@ public final class CutscenePayloads {
         }
     }
 
+    /**
+     * Server to player: turn the player's view towards the entity with this id and keep it on that entity, with a gentle
+     * zoom, until told otherwise. {@link #RELEASE} lets go. It is how the camera "finds" the Spirit when she speaks.
+     */
+    public record Focus(int entityId) implements CustomPacketPayload {
+        public static final int RELEASE = -1;
+        public static final Type<Focus> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, "cutscene_focus"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Focus> CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, Focus::entityId,
+                Focus::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
     private CutscenePayloads() {
     }
 }

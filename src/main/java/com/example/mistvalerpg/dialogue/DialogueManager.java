@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import com.example.mistvalerpg.ModAttachments;
+import com.example.mistvalerpg.cutscene.Cutscene;
 import com.example.mistvalerpg.spirit.SpiritEntity;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -38,6 +39,9 @@ public final class DialogueManager {
     public static void start(ServerPlayer player, DialogueScene scene, @Nullable Entity speaker) {
         if (isTalking(player)) {
             return;
+        }
+        if (speaker != null) {
+            Cutscene.focus(player, speaker);   // the camera swings round to the speaker, so the player is looking at her
         }
         show(player, new Session(scene, scene.start(), speaker == null ? -1 : speaker.getId()));
     }
@@ -98,6 +102,7 @@ public final class DialogueManager {
     private static void finish(ServerPlayer player, Session session, boolean completed) {
         SESSIONS.remove(player.getUUID());
         PacketDistributor.sendToPlayer(player, new DialoguePayloads.End());
+        Cutscene.releaseFocus(player);
         SpiritEntity spirit = spiritOf(player, session);
         if (spirit != null) {
             spirit.talk(SpiritEntity.MOOD_NONE, 0);

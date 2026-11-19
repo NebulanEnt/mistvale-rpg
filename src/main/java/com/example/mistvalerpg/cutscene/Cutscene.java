@@ -2,6 +2,7 @@ package com.example.mistvalerpg.cutscene;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -75,6 +76,16 @@ public final class Cutscene {
     /** Gives the player their own view back and lets them move again. */
     public static void endShots(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, new CutscenePayloads.EndShots());
+    }
+
+    /** Turns the player's view towards {@code target} and keeps it there, with a gentle zoom, until {@link #releaseFocus}. */
+    public static void focus(ServerPlayer player, Entity target) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Focus(target.getId()));
+    }
+
+    /** Lets the player's view go free again. */
+    public static void releaseFocus(ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, new CutscenePayloads.Focus(CutscenePayloads.Focus.RELEASE));
     }
 
     private Cutscene() {

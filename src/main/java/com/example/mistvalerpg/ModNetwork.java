@@ -3,6 +3,7 @@ package com.example.mistvalerpg;
 import com.example.mistvalerpg.client.CameraShots;
 import com.example.mistvalerpg.client.CinematicOverlay;
 import com.example.mistvalerpg.client.DialogueClient;
+import com.example.mistvalerpg.client.FocusCamera;
 import com.example.mistvalerpg.client.FadeOverlay;
 import com.example.mistvalerpg.client.ViewControl;
 import com.example.mistvalerpg.client.WarpOverlay;
@@ -40,6 +41,7 @@ public final class ModNetwork {
         registrar.playToClient(CutscenePayloads.ShoulderView.TYPE, CutscenePayloads.ShoulderView.CODEC, (payload, context) -> ViewControl.onShoulder(payload));
         registrar.playToClient(CutscenePayloads.Shot.TYPE, CutscenePayloads.Shot.CODEC, (payload, context) -> CameraShots.onShot(payload));
         registrar.playToClient(CutscenePayloads.EndShots.TYPE, CutscenePayloads.EndShots.CODEC, (payload, context) -> CameraShots.onEnd());
+        registrar.playToClient(CutscenePayloads.Focus.TYPE, CutscenePayloads.Focus.CODEC, (payload, context) -> FocusCamera.onPacket(payload));
     }
 
     private ModNetwork() {
