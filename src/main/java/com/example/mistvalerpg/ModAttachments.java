@@ -37,6 +37,13 @@ public final class ModAttachments {
                     .copyOnDeath()
                     .build());
 
+    /** Where the player is in the prologue: "" (not in it), "talk", ... (see the Prologue class). Saved with the player. */
+    public static final Supplier<AttachmentType<String>> PROLOGUE_STAGE = ATTACHMENTS.register("prologue_stage",
+            () -> AttachmentType.builder(() -> "")
+                    .serialize(Codec.STRING)
+                    .copyOnDeath()   // dying on the ship must not send the player back to the very start
+                    .build());
+
     private ModAttachments() {
     }
 }

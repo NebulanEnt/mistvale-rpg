@@ -1,0 +1,32 @@
+In Prologue.java, in startFightAfterTalk(...) change the last line
+        startFight(player);
+to
+        beginMist(player);
+and add this method right below startFightAfterTalk (no new imports needed):
+
+    /** The mist rolls in: Brannoch looks around uneasily for eight seconds (160 ticks), then the crew appears and the fight starts. */
+    private static void beginMist(ServerPlayer player) {
+        ServerLevel sea = PrologueSea.level(player);
+        if (sea == null || !isInPrologue(player)) {
+            return;
+        }
+        List<BrannochEntity> list = brannochs(sea, PrologueSea.slot(player));
+        if (list.isEmpty()) {
+            startFight(player);
+            return;
+        }
+        Vec3 spot = brannochSpot(PrologueSea.slot(player));
+        for (BrannochEntity brannoch : list) {
+            brannoch.lookAround();
+        }
+        for (int t = 20; t <= 140; t += 30) {
+            final int step = t;
+            Later.afterPlayer(player.server, player, t, () -> {
+                ServerLevel level = PrologueSea.level(player);
+                if (level != null) {
+                    level.sendParticles(ParticleTypes.CLOUD, spot.x + (step - 80) / 20.0, spot.y + 0.3, spot.z - 2.0, 14, 2.4, 0.4, 2.4, 0.01);
+                }
+            });
+        }
+        Later.afterPlayer(player.server, player, 160, () -> startFight(player));
+    }

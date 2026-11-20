@@ -2,6 +2,7 @@ package com.example.mistvalerpg.client;
 
 import com.example.mistvalerpg.MistvaleRpg;
 import com.example.mistvalerpg.cutscene.CutscenePayloads;
+import com.example.mistvalerpg.prologue.PrologueRegistry;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -27,6 +28,8 @@ public final class ViewControl {
     private static boolean forced;               // true while the story wants the shoulder view
     private static CameraType typeBefore;        // what the camera was before we took it over
     private static String perspectiveBefore;     // the same, in the Perspective API's own words (null if the API is switched off)
+
+    private static boolean inSea;               // true while the player is in the prologue sea: all of it is played over the shoulder
 
     private static boolean paused;               // true while a camera flight has the camera
     private static CameraType typePaused;        // the view to give back when the flight ends
@@ -114,6 +117,15 @@ public final class ViewControl {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
+        // The whole prologue is played over the shoulder, from the moment the player arrives in the sea until they leave it.
+        // The client sees which dimension it is in, so this needs no message from the server.
+        if (minecraft.player != null && minecraft.level != null) {
+            boolean nowInSea = minecraft.level.dimension().equals(PrologueRegistry.SEA);
+            if (nowInSea != inSea) {
+                inSea = nowInSea;
+                onShoulder(new CutscenePayloads.ShoulderView(nowInSea, !nowInSea));   // leaving: let go, but stay in the shoulder view
+            }
+        }
         if (minecraft.player == null || minecraft.player.tickCount % CHECK_EVERY != 0) {
             return;
         }
@@ -141,6 +153,7 @@ public final class ViewControl {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         forced = false;
+        inSea = false;
         paused = false;
         typeBefore = null;
         perspectiveBefore = null;

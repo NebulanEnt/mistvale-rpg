@@ -8,6 +8,7 @@ import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.dialogue.DialogueScene;
 import com.example.mistvalerpg.dialogue.DialogueScenes;
 import com.example.mistvalerpg.prologue.BrannochEntity;
+import com.example.mistvalerpg.prologue.Prologue;
 import com.example.mistvalerpg.prologue.PrologueSea;
 import com.example.mistvalerpg.prologue.PrologueShip;
 import com.example.mistvalerpg.rift.RiftBlock;
@@ -54,6 +55,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
  *   /mistvale prologue sea                                  sends you to the beach of your own private sea (takes you one if you have none)
  *   /mistvale prologue ship                                 places the Kraken's ship in your private sea and puts you on its deck
+ *   /mistvale prologue begin                                starts the prologue from the beginning: the ship, your gear, and Brannoch's talk
  *   /mistvale prologue brannoch                             makes First Mate Brannoch appear in front of you
  *   /mistvale prologue leave                                gives your private sea back and sends you to the world spawn
  */
@@ -162,6 +164,14 @@ public final class ModCommands {
                             }
                             BlockPos deck = PrologueShip.deckSpawn(slot);
                             player.teleportTo(sea, deck.getX() + 0.5, deck.getY(), deck.getZ() + 0.5, 180.0F, 4.0F);
+                            return 1;
+                        }))
+                .then(Commands.literal("begin")
+                        .executes(context -> {
+                            if (!Prologue.begin(context.getSource().getPlayerOrException())) {
+                                context.getSource().sendFailure(Component.literal("The prologue could not start. Is Bosses'Rise installed? See the log."));
+                                return 0;
+                            }
                             return 1;
                         }))
                 .then(Commands.literal("brannoch")

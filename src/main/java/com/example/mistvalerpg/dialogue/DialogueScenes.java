@@ -17,6 +17,7 @@ import com.example.mistvalerpg.dialogue.DialogueNode.Choice;
 public final class DialogueScenes {
     private static final DialogueSpeaker SPIRIT = DialogueSpeaker.SPIRIT;
     private static final DialogueSpeaker PLAYER = DialogueSpeaker.PLAYER;
+    private static final DialogueSpeaker BRANNOCH = DialogueSpeaker.BRANNOCH;
 
     /** The Spirit's very first talk with a new player. */
     public static final DialogueScene FIRST_MEETING = DialogueScene.builder("first_meeting", "hello")
@@ -46,6 +47,13 @@ public final class DialogueScenes {
             .say("rift", SPIRIT, Emotion.HAPPY, null, DialogueAction.START_SPAWN_SCENE)
             .build();
 
+    /** First Mate Brannoch, on the deck, just before the fight. */
+    public static final DialogueScene PROLOGUE_INTRO = DialogueScene.builder("prologue_intro", "hail")
+            .say("hail", BRANNOCH, Emotion.NEUTRAL, "sea")
+            .say("sea", BRANNOCH, Emotion.NEUTRAL, "warning")
+            .say("warning", BRANNOCH, Emotion.ANGRY, null)
+            .build();
+
     /** What she says to someone she has already met. */
     public static final DialogueScene AGAIN = DialogueScene.builder("again", "hello")
             .say("hello", SPIRIT, Emotion.HAPPY, "mist")
@@ -66,6 +74,7 @@ public final class DialogueScenes {
 
     private static final Map<String, DialogueScene> ALL = Map.of(
             FIRST_MEETING.id(), FIRST_MEETING,
+            PROLOGUE_INTRO.id(), PROLOGUE_INTRO,
             AGAIN.id(), AGAIN,
             WELCOME.id(), WELCOME);
 

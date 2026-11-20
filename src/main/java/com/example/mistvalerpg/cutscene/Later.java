@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -25,6 +26,15 @@ public final class Later {
     /** Runs {@code action} after {@code ticks} ticks (20 ticks = 1 second). */
     public static void after(MinecraftServer server, int ticks, Runnable action) {
         TASKS.add(new Task(server.getTickCount() + ticks, action));
+    }
+
+    /** The same, but nothing happens if the player has left the game in the meantime. Most scenes are about one player. */
+    public static void afterPlayer(MinecraftServer server, ServerPlayer player, int ticks, Runnable action) {
+        after(server, ticks, () -> {
+            if (!player.hasDisconnected()) {
+                action.run();
+            }
+        });
     }
 
     // Called by the game at the end of every server tick (registered in MistvaleRpg).

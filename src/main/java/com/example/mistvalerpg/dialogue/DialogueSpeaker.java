@@ -19,7 +19,9 @@ public enum DialogueSpeaker {
     // The numbers are the old mod's: the Spirit types at 26 letters a second with a steady pitch,
     // the player a little faster with a slightly wobbling pitch.
     SPIRIT("spirit", 0x7FE8D8, false, new Voice(ModSounds.SPIRIT_VOICE::get, 1.0F, 0.0F, 2, 0.5F, 26)),
-    PLAYER("player", 0xF2D49B, true, new Voice(ModSounds.PLAYER_VOICE::get, 1.0F, 0.1F, 2, 0.5F, 30));
+    PLAYER("player", 0xF2D49B, true, new Voice(ModSounds.PLAYER_VOICE::get, 1.0F, 0.1F, 2, 0.5F, 30)),
+    // First Mate Brannoch: a gruff pirate. He uses the player's clips, played low and slow.
+    BRANNOCH("brannoch", 0xD9A05B, false, new Voice(ModSounds.PLAYER_VOICE::get, 0.7F, 0.1F, 2, 0.5F, 22));
 
     /**
      * How somebody's voice sounds while their text types in.

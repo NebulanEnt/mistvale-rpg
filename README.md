@@ -65,7 +65,7 @@ These need operator permission (level 2).
 | `/mistvale cutscene title <text>` | Two seconds of black, then the title card "Somewhere in..." and your text in the bottom left corner. |
 | `/mistvale cutscene look <degrees> <ticks>` | Turns your view to the right (or to the left, with a minus) over some ticks. |
 | `/mistvale prologue sea` | Sends you to the beach of your own private sea. `/mistvale prologue ship` places the Kraken's ship there and puts you on its deck. `/mistvale prologue leave` sends you back to the world spawn. |
-| `/mistvale prologue sea` | Sends you to the beach of your own private sea. `/mistvale prologue ship` places the Kraken's ship there and puts you on its deck. `/mistvale prologue brannoch` makes First Mate Brannoch appear in front of you. `/mistvale prologue leave` sends you back to the world spawn. |
+| `/mistvale prologue sea` | Sends you to the beach of your own private sea. `/mistvale prologue ship` places the Kraken's ship there and puts you on its deck. `/mistvale prologue begin` starts the prologue on the ship: your gear, Brannoch and his talk. `/mistvale prologue brannoch` makes First Mate Brannoch appear in front of you. `/mistvale prologue leave` sends you back to the world spawn. |
 | `/mistvale cutscene spawn [north\|west\|south\|east]` | Plays the arrival film: you are sent 50 blocks out from the world spawn to that land (the north if you do not say), and the Spirit welcomes you there. |
 
 ## Building from source
