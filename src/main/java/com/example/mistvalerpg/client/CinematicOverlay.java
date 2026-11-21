@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.mistvalerpg.MistvaleRpg;
 import com.example.mistvalerpg.cutscene.CutscenePayloads;
+import com.example.mistvalerpg.prologue.PrologueRegistry;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -13,9 +14,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 
 /**
  * The two things that make a scene look like a film: black bars at the top and bottom of the screen,
@@ -50,7 +54,9 @@ public final class CinematicOverlay {
         Minecraft minecraft = Minecraft.getInstance();
         if (barsOn) {
             if (hideGuiBefore == null) {
-                hideGuiBefore = minecraft.options.hideGui;
+                // In the prologue sea the HUD is always on before a scene (Bosses'Rise's own film may have hidden it a moment earlier).
+                boolean inSea = minecraft.level != null && minecraft.level.dimension().equals(PrologueRegistry.SEA);
+                hideGuiBefore = inSea ? Boolean.FALSE : minecraft.options.hideGui;
             }
             minecraft.options.hideGui = true;
         } else if (hideGuiBefore != null) {
@@ -128,6 +134,23 @@ public final class CinematicOverlay {
             y += lineHeight;
         }
         graphics.pose().popPose();
+    }
+
+    // While the bars are in, the picture is as clean as with F1: every screen layer that is not ours (the crosshair, hearts, hotbar,
+    // and the layers that other mods add, which do not obey F1) is skipped. Our own layers (bars, fade, title card) stay.
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onGuiLayer(RenderGuiLayerEvent.Pre event) {
+        if ((barsOn || barAmount() > 0.001F) && !event.getName().getNamespace().equals(MistvaleRpg.MODID)) {
+            event.setCanceled(true);
+        }
+    }
+
+    // Something else (another mod's film, a key press) may switch the HUD back on while the bars are in: switch it off again.
+    @SubscribeEvent
+    public static void onTick(ClientTickEvent.Post event) {
+        if (barsOn) {
+            Minecraft.getInstance().options.hideGui = true;
+        }
     }
 
     // If you leave the world in the middle of a scene, put the HUD back and clear everything.

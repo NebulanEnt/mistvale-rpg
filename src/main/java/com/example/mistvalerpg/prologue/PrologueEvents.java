@@ -1,11 +1,16 @@
 package com.example.mistvalerpg.prologue;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
@@ -28,12 +33,50 @@ public final class PrologueEvents {
             return;   // the void and the /kill command are always allowed
         }
         String stage = Prologue.stage(player);
-        if (stage.equals(Prologue.TALK)) {
-            event.setNewDamage(0.0F);   // nobody is fighting yet
-        } else if (stage.equals(Prologue.CREW)) {
+        float health = player.getHealth() + player.getAbsorptionAmount();
+        if (stage.equals(Prologue.CREW)) {
             // A pirate never takes more than two hearts at a time, and never takes the player below one and a half hearts.
-            float health = player.getHealth() + player.getAbsorptionAmount();
             event.setNewDamage(Math.max(0.0F, Math.min(Math.min(event.getNewDamage(), 4.0F), health - 3.0F)));
+        } else if (stage.equals(Prologue.KRAKEN)) {
+            // The Kraken hits hard (two to three hearts), everything else lightly (two hearts at most).
+            float damage = krakenHit(event.getSource())
+                    ? Mth.clamp(event.getNewDamage(), 4.0F, 6.0F)
+                    : Math.min(event.getNewDamage(), 4.0F);
+            if (damage >= health - 1.0F) {
+                // This one would be the last. The player is left at half a heart, and the knockout begins.
+                event.setNewDamage(Math.max(0.0F, health - 1.0F));
+                Prologue.knockout(player);
+            } else {
+                event.setNewDamage(damage);
+            }
+        } else {
+            event.setNewDamage(0.0F);   // the talk, the knockout, the beach: nothing can hurt the player
+        }
+    }
+
+    // True if the Kraken (or one of its tentacles) did the damage.
+    private static boolean krakenHit(DamageSource source) {
+        for (Entity entity : new Entity[] {source.getEntity(), source.getDirectEntity()}) {
+            if (entity != null) {
+                ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+                if (id.getNamespace().equals(PrologueShip.SHIP_MOD) && id.getPath().contains("kraken")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** "The Kraken is about to be hurt." It is never allowed to go below a fifth of its health: the player cannot win this fight. */
+    public static void onKrakenHurt(LivingIncomingDamageEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity.level().isClientSide() || !entity.level().dimension().equals(PrologueRegistry.SEA)) {
+            return;
+        }
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (id.getNamespace().equals(PrologueShip.SHIP_MOD) && id.getPath().equals("kraken")
+                && entity.getHealth() - event.getAmount() < entity.getMaxHealth() * 0.2F) {
+            event.setCanceled(true);
         }
     }
 

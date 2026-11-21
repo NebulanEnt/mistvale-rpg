@@ -13,24 +13,30 @@ import com.example.mistvalerpg.cutscene.Cutscene;
 import com.example.mistvalerpg.cutscene.Later;
 import com.example.mistvalerpg.dialogue.DialogueManager;
 import com.example.mistvalerpg.dialogue.DialogueScenes;
+import com.example.mistvalerpg.spirit.SpiritEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -48,8 +54,15 @@ public final class Prologue {
     public static final String TALK = "talk";
     /** The skeleton pirates are fighting the player. */
     public static final String CREW = "crew";
-    /** The deck is quiet and the sea is about to answer. */
+    /** The deck is quiet, the Kraken is up and the player is fighting it. */
     public static final String KRAKEN = "kraken";
+    /** The player has been beaten: the screen is black and the ship is going under. */
+    public static final String KNOCKOUT = "knockout";
+    /** The player wakes on the beach and meets the Spirit. */
+    public static final String BEACH = "beach";
+
+    /** How long the player may fight the Kraken: five minutes. After that the Kraken wins, whatever happened. */
+    private static final int KRAKEN_MAX_TICKS = 6000;
 
     /** The tag every pirate of the prologue carries. Pirates without the tag are not ours and are not allowed into the sea. */
     public static final String PIRATE_TAG = "mistvale_rpg_prologue_pirate";
@@ -347,7 +360,7 @@ public final class Prologue {
             }
         }
         // Below six hearts the player slowly heals, so the pirates can win a round but never the fight.
-        if (elapsed % 30 == 0 && player.getHealth() < 12.0F) {
+        if (elapsed % 30 < 10 && player.getHealth() < 12.0F) {
             player.heal(1.0F);
         }
         if (elapsed > 60 && crew.isEmpty() || elapsed > 2400) {
@@ -361,12 +374,227 @@ public final class Prologue {
         Later.afterPlayer(player.server, player, 10, () -> watchCrew(player, begun));
     }
 
-    // The crew is down. The deck is quiet. The next part (the Kraken) begins here.
-    private static void crewDown(ServerPlayer player, ServerLevel sea) {
+    // The crew is down. The deck is quiet, the planks tremble, and the Kraken's spawner is put back: the Kraken rises.
+    public static void crewDown(ServerPlayer player, ServerLevel sea) {
         setStage(player, KRAKEN);
         player.setHealth(Math.max(player.getHealth(), 14.0F));
+        player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
         Cutscene.subtitle(player, Component.translatable("scene.mistvale_rpg.deck_silent"), 10, 60, 15);
         heartbeat(player, 6);
+        PrologueShip.armSpawner(sea, PrologueSea.slot(player));
+
+        // The five minutes of the fight are counted from the end of the Kraken's rising, not from its start.
+        long begun = sea.getGameTime() + KRAKEN_INTRO_TICKS;
+        Later.afterPlayer(player.server, player, 20, () -> watchKraken(player, begun));
+
+        // The film of the Kraken rising starts as soon as the Kraken is there to be filmed.
+        krakenFilm(player, sea, PrologueSea.slot(player), 0);
+    }
+
+    /** How long Bosses'Rise's Kraken takes to rise, in ticks. During this time it cannot be hurt and it hurts nobody. */
+    private static final int KRAKEN_INTRO_TICKS = 490;
+
+    // Waits (looking every four ticks, for four seconds at most) until the rising Kraken exists, so the camera knows where to look.
+    private static void krakenFilm(ServerPlayer player, ServerLevel sea, int slot, int waited) {
+        if (!isInPrologue(player) || !stage(player).equals(KRAKEN)) {
+            return;
+        }
+        Vec3 target = findKraken(sea, slot);
+        if (target == null && waited < 80) {
+            Later.afterPlayer(player.server, player, 4, () -> krakenFilm(player, sea, slot, waited + 4));
+            return;
+        }
+        if (target == null) {
+            // Not found (Bosses'Rise changed?): look at the water in front of the bow, where the Kraken is meant to come from.
+            target = Vec3.atBottomCenterOf(PrologueShip.spawnerPos(slot)).add(0.0, -3.0, -20.0);
+        }
+        playKrakenFilm(player, target, KRAKEN_INTRO_TICKS - waited - 15);
+    }
+
+    // The Kraken that is rising (or, if it has risen already, the Kraken itself): where it is.
+    @Nullable
+    private static Vec3 findKraken(ServerLevel sea, int slot) {
+        Vec3 found = null;
+        for (Entity entity : sea.getEntities((Entity) null, PrologueShip.bounds(slot).inflate(60.0), e -> true)) {
+            ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+            if (id.getNamespace().equals(PrologueShip.SHIP_MOD) && id.getPath().equals("cinematic_kraken")) {
+                return entity.position();
+            }
+            if (id.getNamespace().equals(PrologueShip.SHIP_MOD) && id.getPath().equals("kraken")) {
+                found = entity.position();
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Our own film of the Kraken rising, in four shots over "ticks" ticks, with the film bars in. The camera is ours, so it
+     * always works. "target" is the foot of the Kraken; every shot looks at a point above it that climbs as the Kraken rises.
+     *
+     * 1. From the player's own eyes: a slow push towards the water while the look climbs.
+     * 2. A sweep across the deck at rail height, from the player's right to their left, past the player.
+     * 3. A high arc over the water, round the Kraken, from the right to the left.
+     * 4. Back over the player's shoulder, ending where their eyes are, so the cut to the fight is not a jump.
+     */
+    private static void playKrakenFilm(ServerPlayer player, Vec3 target, int ticks) {
+        Vec3 eye = player.getEyePosition();
+        Vec3 flat = new Vec3(target.x - eye.x, 0.0, target.z - eye.z);
+        double distance = flat.length();
+        Vec3 dir = distance < 1.0 ? new Vec3(0.0, 0.0, -1.0) : flat.scale(1.0 / distance);   // from the player towards the Kraken
+        Vec3 side = new Vec3(-dir.z, 0.0, dir.x);                                           // to the player's right
+        Vec3 base = player.position();
+        int first = ticks * 20 / 100;
+        int second = ticks * 25 / 100;
+        int third = ticks * 30 / 100;
+        int fourth = ticks - first - second - third;
+
+        Cutscene.bars(player, true);
+        // 1
+        Cutscene.shot(player, eye, eye.add(dir.scale(2.5)).add(0.0, 0.3, 0.0), target.add(0.0, 3.0, 0.0), target.add(0.0, 7.0, 0.0), first, true, false);
+        // 2
+        Cutscene.shot(player, base.add(side.scale(6.0)).add(dir.scale(2.0)).add(0.0, 2.6, 0.0),
+                base.add(side.scale(-6.0)).add(dir.scale(8.0)).add(0.0, 3.2, 0.0),
+                target.add(0.0, 4.0, 0.0), target.add(0.0, 8.0, 0.0), second, true, true);
+        // 3
+        Vec3 mid = base.add(dir.scale(distance * 0.55));
+        Cutscene.shot(player, mid.add(side.scale(16.0)).add(0.0, 10.0, 0.0), mid.add(side.scale(-16.0)).add(0.0, 16.0, 0.0),
+                target.add(0.0, 8.0, 0.0), target.add(0.0, 10.0, 0.0), third, true, true);
+        // 4
+        Cutscene.shot(player, base.add(dir.scale(-4.0)).add(side.scale(2.0)).add(0.0, 5.0, 0.0), eye,
+                target.add(0.0, 10.0, 0.0), target.add(0.0, 8.0, 0.0), fourth, true, true);
+
+        Later.afterPlayer(player.server, player, ticks, () -> {
+            Cutscene.endShots(player);
+            Cutscene.bars(player, false);
+        });
+    }
+
+    // Looks at the Kraken fight twice a second. The only thing it checks is the clock: after five minutes the Kraken wins.
+    // (The other way the fight ends, the player being beaten, is decided in PrologueEvents.onHurt.)
+    private static void watchKraken(ServerPlayer player, long begun) {
+        ServerLevel sea = PrologueSea.level(player);
+        if (sea == null || !stage(player).equals(KRAKEN)) {
+            return;
+        }
+        if (sea.getGameTime() - begun > KRAKEN_MAX_TICKS) {
+            knockout(player);
+            return;
+        }
+        Later.afterPlayer(player.server, player, 10, () -> watchKraken(player, begun));
+    }
+
+    /**
+     * The player is beaten. The screen goes black, the ship goes under (the player does not see it), and a few lines of
+     * text tell what happened. Then the player wakes on the beach of the home island. Every part below is "do this a
+     * little later", counted in ticks from the moment the player was beaten.
+     */
+    public static void knockout(ServerPlayer player) {
+        if (!stage(player).equals(KRAKEN)) {
+            return;   // only once
+        }
+        setStage(player, KNOCKOUT);
+        MinecraftServer server = player.server;
+
+        // 0.0 seconds: black, a heavy blow, one half heart. (If the film of the Kraken is still running, it ends here.)
+        Cutscene.endShots(player);
+        Cutscene.bars(player, false);
+        Cutscene.fade(player, 25, 3600, 0, 0x000000);
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 4, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0, false, false));
+        player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_HURT, SoundSource.PLAYERS, 1.0F, 0.5F);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.WARDEN_SONIC_BOOM, SoundSource.HOSTILE, 0.7F, 0.5F);
+        player.setHealth(1.0F);
+
+        // 1.5 seconds: behind the black screen, the player is carried to the beach and everything of the fight is cleared away.
+        // The player cannot move until the screen lifts (the slowness lasts that long), so they cannot wander off blind.
+        Later.afterPlayer(server, player, 30, () -> {
+            ServerLevel sea = PrologueSea.level(player);
+            if (sea != null) {
+                discardFightEntities(sea, PrologueSea.slot(player));
+            }
+            player.removeAllEffects();
+            player.getInventory().clearContent();
+            player.setHealth(player.getMaxHealth());
+            PrologueSea.toBeach(player);
+            PrologueTime.set(player, PrologueTime.MORNING);   // behind the black screen it becomes morning
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 490, 6, false, false));
+        });
+
+        // The sinking, over the black screen: four lines type themselves in, one after the other, each with the sounds of the sea
+        // around a drowning heartbeat. (A subtitle cannot be used: the black screen is drawn over subtitles. The title card is drawn over
+        // the black, so the lines use it, with no big line.) Each line: typing, then it stays, then it fades; the next one begins after.
+        sink(server, player, 20, SoundEvents.AMBIENT_UNDERWATER_ENTER, 1.0F, 0.8F);
+        sink(server, player, 24, SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_INSIDE, 0.7F, 0.8F);
+        // 2.5 s: "The Monster's power was too great..." Slow, heavy heartbeats under the water.
+        koLine(server, player, 50, "scene.mistvale_rpg.ko_1", 40, 30);
+        sink(server, player, 60, SoundEvents.WATER_AMBIENT, 0.9F, 0.6F);
+        for (int i = 0; i < 4; i++) {
+            sink(server, player, 56 + i * 28, SoundEvents.WARDEN_HEARTBEAT, 1.0F, 0.7F);
+        }
+        // 7 s: "...The ship went under." Splash, wood breaking and a rush of bubbles.
+        koLine(server, player, 140, "scene.mistvale_rpg.ko_2", 30, 30);
+        sink(server, player, 142, SoundEvents.PLAYER_SPLASH_HIGH_SPEED, 1.0F, 0.5F);
+        sink(server, player, 150, SoundEvents.WOOD_BREAK, 0.9F, 0.4F);
+        sink(server, player, 172, SoundEvents.WOOD_BREAK, 0.7F, 0.3F);
+        for (int i = 0; i < 4; i++) {
+            sink(server, player, 152 + i * 18, SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, 0.7F, 0.9F);
+        }
+        // 11 s: "But the fight is not over." The heartbeat comes back, stronger and quicker.
+        koLine(server, player, 220, "scene.mistvale_rpg.ko_3", 36, 24);
+        for (int i = 0; i < 5; i++) {
+            sink(server, player, 226 + i * 22, SoundEvents.WARDEN_HEARTBEAT, 1.0F, 0.85F);
+        }
+        // 15 s: "Not yet." One last heavy beat, and a low cry from the deep.
+        koLine(server, player, 300, "scene.mistvale_rpg.ko_4", 14, 40);
+        sink(server, player, 300, SoundEvents.WARDEN_HEARTBEAT, 1.0F, 0.6F);
+        sink(server, player, 304, SoundEvents.SOUL_ESCAPE.value(), 0.8F, 0.5F);
+        sink(server, player, 306, SoundEvents.AMBIENT_UNDERWATER_EXIT, 0.8F, 0.7F);
+
+        // 19.5 s: the card of the spawn film, still over the black: "Somewhere in..." types in, then MISTVALE fades in under it.
+        // The sound is a shore now: slow waves washing up, one every three seconds, and the water going back.
+        Later.afterPlayer(server, player, 390, () -> Cutscene.title(player, Component.translatable("scene.mistvale_rpg.somewhere_in"),
+                Component.translatable("scene.mistvale_rpg.mistvale"), 20, 20, 40, 60));
+        for (int i = 0; i < 6; i++) {
+            int at = 380 + i * 60;
+            sink(server, player, at, SoundEvents.WATER_AMBIENT, 1.0F, 0.5F);
+            sink(server, player, at + 6, SoundEvents.PLAYER_SPLASH, 0.35F, 0.4F);
+            sink(server, player, at + 20, SoundEvents.BOAT_PADDLE_WATER, 0.5F, 0.45F);
+            sink(server, player, at + 38, SoundEvents.BOAT_PADDLE_WATER, 0.3F, 0.35F);
+        }
+
+        // 25 s: the black screen lifts, slowly, on the beach. The player is still dizzy for a moment.
+        Later.afterPlayer(server, player, 500, () -> Cutscene.fade(player, 0, 0, 60, 0x000000));
+        Later.afterPlayer(server, player, 505, () -> {
+            player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1, false, false));
+        });
+
+        // 28 s: the player is awake. The beach is the next part of the prologue.
+        Later.afterPlayer(server, player, 565, () -> {
+            setStage(player, BEACH);
+            player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 60, 0, false, false));
+        });
+    }
+
+    // One line of the sinking, typed in over the black screen: "typing" ticks of typing, then it stays "hold" ticks and fades over 10.
+    private static void koLine(MinecraftServer server, ServerPlayer player, int at, String key, int typing, int hold) {
+        Later.afterPlayer(server, player, at, () -> Cutscene.title(player, Component.translatable(key), Component.empty(), typing, 0, 10, hold));
+    }
+
+    // A sound that only the player hears, "at" ticks from now, in the master channel: no distance, no echo, no slider can mute it.
+    private static void sink(MinecraftServer server, ServerPlayer player, int at, SoundEvent sound, float volume, float pitch) {
+        Later.afterPlayer(server, player, at, () -> player.playNotifySound(sound, SoundSource.MASTER, volume, pitch));
+    }
+
+    // After the fight: everything that is not a player is taken out of the ship's part of the sea (pirates, the Kraken, its tentacles).
+    // The Spirit is the only creature that is allowed to stay.
+    static void discardFightEntities(ServerLevel sea, int slot) {
+        int x = PrologueShip.originX(slot);
+        AABB box = new AABB(x - 140, 0, -140, x + 170, 160, 140);
+        for (Entity entity : sea.getEntities((Entity) null, box, e -> !(e instanceof Player) && !(e instanceof SpiritEntity)
+                && (e instanceof Mob || BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getNamespace().equals(PrologueShip.SHIP_MOD)))) {
+            entity.discard();
+        }
     }
 
     // A heartbeat that only the player hears: a beat, then the next one a second later, "beats" times. It is played

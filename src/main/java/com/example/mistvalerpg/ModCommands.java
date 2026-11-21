@@ -59,6 +59,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale prologue time night|morning|normal           changes the hour of the day in the sea, only for you (to see the sky)
  *   /mistvale prologue begin                                starts the prologue from the beginning: the ship, your gear, and Brannoch's talk
  *   /mistvale prologue fight                                skips the talk and brings the fog and the pirates at once (after "begin")
+ *   /mistvale prologue kraken                               skips to the Kraken (the crew is gone, the spawner is armed)
+ *   /mistvale prologue knockout                             skips to the beating: black screen, wake on the beach
  *   /mistvale prologue brannoch                             makes First Mate Brannoch appear in front of you
  *   /mistvale prologue leave                                gives your private sea back and sends you to the world spawn
  */
@@ -193,6 +195,17 @@ public final class ModCommands {
                 .then(Commands.literal("fight")
                         .executes(context -> {
                             Prologue.startFight(context.getSource().getPlayerOrException());
+                            return 1;
+                        }))
+                .then(Commands.literal("kraken")
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            Prologue.crewDown(player, PrologueSea.level(player));
+                            return 1;
+                        }))
+                .then(Commands.literal("knockout")
+                        .executes(context -> {
+                            Prologue.knockout(context.getSource().getPlayerOrException());
                             return 1;
                         }))
                 .then(Commands.literal("brannoch")

@@ -14,9 +14,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -86,6 +88,27 @@ public final class PrologueShip {
             }
         }
         return placed;
+    }
+
+    /**
+     * Puts the Kraken's spawner back where the ship's files have it. As soon as the block stands there, the Kraken rises out
+     * of the sea. Returns false if the game does not have the block (Bosses'Rise is not installed).
+     */
+    public static boolean armSpawner(ServerLevel sea, int slot) {
+        Block spawner = BuiltInRegistries.BLOCK.get(owned("kraken_spawner"));
+        if (spawner == Blocks.AIR) {
+            LOG.error("{}: the block {} was not found. Is Bosses'Rise installed?", MistvaleRpg.MODID, owned("kraken_spawner"));
+            return false;
+        }
+        BlockState state = spawner.defaultBlockState();
+        // The spawner has a "facing" property. It is set to the side the ship's files have it on.
+        if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+            state = state.setValue(BlockStateProperties.HORIZONTAL_FACING, SPAWNER_FACING);
+        } else if (state.hasProperty(BlockStateProperties.FACING)) {
+            state = state.setValue(BlockStateProperties.FACING, SPAWNER_FACING);
+        }
+        sea.setBlock(spawnerPos(slot), state, 3);
+        return true;
     }
 
     // Places one structure file at a position.

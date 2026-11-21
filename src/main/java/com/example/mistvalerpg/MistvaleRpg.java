@@ -143,6 +143,7 @@ public class MistvaleRpg {
         NeoForge.EVENT_BUS.addListener(Later::onServerStopped);
         // The rules of the prologue sea (see PrologueEvents).
         NeoForge.EVENT_BUS.addListener(PrologueEvents::onHurt);
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onKrakenHurt);
         NeoForge.EVENT_BUS.addListener(PrologueEvents::onDeath);
         NeoForge.EVENT_BUS.addListener(PrologueEvents::onJoin);
         NeoForge.EVENT_BUS.addListener(PrologueEvents::onNaturalSpawn);
