@@ -3,6 +3,7 @@ package com.example.mistvalerpg.dialogue;
 import java.util.function.Consumer;
 
 import com.example.mistvalerpg.ModAttachments;
+import com.example.mistvalerpg.prologue.Prologue;
 import com.example.mistvalerpg.story.Region;
 import com.example.mistvalerpg.story.SpawnScene;
 
@@ -18,7 +19,9 @@ public enum DialogueAction {
     CHOOSE_SOUTH(player -> choose(player, Region.SOUTH)),
     CHOOSE_EAST(player -> choose(player, Region.EAST)),
     /** The Spirit sends the player to the land they chose. It is a little film: it starts when the conversation is closed. */
-    START_SPAWN_SCENE(SpawnScene::playAfterTalk);
+    START_SPAWN_SCENE(SpawnScene::playAfterTalk),
+    /** The fog comes and the skeleton pirates attack. Like the spawn film, it waits until the conversation is closed. */
+    START_FIGHT(Prologue::startFightAfterTalk);
 
     private final Consumer<ServerPlayer> effect;
 

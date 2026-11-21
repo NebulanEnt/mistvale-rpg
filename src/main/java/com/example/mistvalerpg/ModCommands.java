@@ -10,6 +10,7 @@ import com.example.mistvalerpg.dialogue.DialogueScenes;
 import com.example.mistvalerpg.prologue.BrannochEntity;
 import com.example.mistvalerpg.prologue.Prologue;
 import com.example.mistvalerpg.prologue.PrologueSea;
+import com.example.mistvalerpg.prologue.PrologueTime;
 import com.example.mistvalerpg.prologue.PrologueShip;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.rift.RiftVariant;
@@ -55,7 +56,9 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   /mistvale cutscene stop                                 ends a flight and gives you your camera back
  *   /mistvale prologue sea                                  sends you to the beach of your own private sea (takes you one if you have none)
  *   /mistvale prologue ship                                 places the Kraken's ship in your private sea and puts you on its deck
+ *   /mistvale prologue time night|morning|normal           changes the hour of the day in the sea, only for you (to see the sky)
  *   /mistvale prologue begin                                starts the prologue from the beginning: the ship, your gear, and Brannoch's talk
+ *   /mistvale prologue fight                                skips the talk and brings the fog and the pirates at once (after "begin")
  *   /mistvale prologue brannoch                             makes First Mate Brannoch appear in front of you
  *   /mistvale prologue leave                                gives your private sea back and sends you to the world spawn
  */
@@ -166,12 +169,30 @@ public final class ModCommands {
                             player.teleportTo(sea, deck.getX() + 0.5, deck.getY(), deck.getZ() + 0.5, 180.0F, 4.0F);
                             return 1;
                         }))
+                .then(Commands.literal("time")
+                        .then(Commands.literal("night").executes(context -> {
+                            PrologueTime.set(context.getSource().getPlayerOrException(), PrologueTime.NIGHT);
+                            return 1;
+                        }))
+                        .then(Commands.literal("morning").executes(context -> {
+                            PrologueTime.set(context.getSource().getPlayerOrException(), PrologueTime.MORNING);
+                            return 1;
+                        }))
+                        .then(Commands.literal("normal").executes(context -> {
+                            PrologueTime.clear(context.getSource().getPlayerOrException());
+                            return 1;
+                        })))
                 .then(Commands.literal("begin")
                         .executes(context -> {
                             if (!Prologue.begin(context.getSource().getPlayerOrException())) {
                                 context.getSource().sendFailure(Component.literal("The prologue could not start. Is Bosses'Rise installed? See the log."));
                                 return 0;
                             }
+                            return 1;
+                        }))
+                .then(Commands.literal("fight")
+                        .executes(context -> {
+                            Prologue.startFight(context.getSource().getPlayerOrException());
                             return 1;
                         }))
                 .then(Commands.literal("brannoch")

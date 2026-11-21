@@ -19,12 +19,12 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  *
  * A dimension's clock belongs to the overworld, and a "fixed_time" in the dimension file cannot be changed while the game runs.
  * So the sea has no fixed time, and instead this class tells the one player's game what time it is, with the game's own
- * "set the time" message. The message is sent often, because the game itself keeps sending the overworld's time.
+ * "set the time" message. The message is sent every tick, because the game itself keeps sending the overworld's time.
  */
 @EventBusSubscriber(modid = MistvaleRpg.MODID)
 public final class PrologueTime {
-    /** Almost night (the sun is just gone). */
-    public static final long NIGHT = 12000L;
+    /** Night: the sun is long gone and the moon is up (13000 is when it gets dark, 18000 is midnight). */
+    public static final long NIGHT = 15500L;
     /** A morning sun, low in the sky. */
     public static final long MORNING = 2000L;
 
@@ -61,9 +61,9 @@ public final class PrologueTime {
             return;
         }
         if (PrologueSea.isInSea(player)) {
-            if (player.tickCount % 2 == 0) {
-                send(player, entry[0]);
-            }
+            // Every tick, right after the game's own time message (which it sends once a second): the two arrive together
+            // and the sky never has time to show the wrong hour.
+            send(player, entry[0]);
         } else if (player.server.getTickCount() - entry[1] > GRACE_TICKS) {
             clear(player);   // the player left the sea (for example with a command): the natural time comes back
         }

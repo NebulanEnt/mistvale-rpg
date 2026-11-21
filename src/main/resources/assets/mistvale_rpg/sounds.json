@@ -26,5 +26,12 @@
       "mistvale_rpg:voice/player_d"
     ],
     "subtitle": "subtitles.mistvale_rpg.player_voice"
+  },
+  "skeleton_voice": {
+    "sounds": [
+      "mistvale_rpg:voice/deep_a",
+      "mistvale_rpg:voice/deep_b"
+    ],
+    "subtitle": "subtitles.mistvale_rpg.skeleton_voice"
   }
 }

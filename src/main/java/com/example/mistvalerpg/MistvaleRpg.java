@@ -3,6 +3,7 @@ package com.example.mistvalerpg;
 import org.slf4j.Logger;
 
 import com.example.mistvalerpg.cutscene.Later;
+import com.example.mistvalerpg.prologue.PrologueEvents;
 import com.example.mistvalerpg.prologue.PrologueRegistry;
 import com.example.mistvalerpg.rift.RiftBlock;
 import com.example.mistvalerpg.dialogue.DialogueManager;
@@ -140,6 +141,13 @@ public class MistvaleRpg {
         NeoForge.EVENT_BUS.addListener(SoulPlatform::onLevelTick);   // the soul platform's ritual steps
         NeoForge.EVENT_BUS.addListener(Later::onServerTick);         // "do this in a moment": the timing of every cutscene
         NeoForge.EVENT_BUS.addListener(Later::onServerStopped);
+        // The rules of the prologue sea (see PrologueEvents).
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onHurt);
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onDeath);
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onJoin);
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onNaturalSpawn);
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onPirateDrops);
+        NeoForge.EVENT_BUS.addListener(PrologueEvents::onPirateXp);
         // A player who logs out in the middle of a conversation must not stay "talking" forever.
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {

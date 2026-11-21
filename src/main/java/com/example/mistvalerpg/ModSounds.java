@@ -29,6 +29,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> SPIRIT_VOICE = register("spirit_voice");
     // The player's own voice in dialogue boxes
     public static final DeferredHolder<SoundEvent, SoundEvent> PLAYER_VOICE = register("player_voice");
+    // The hollow voice of Captain Brannoch after the light took him
+    public static final DeferredHolder<SoundEvent, SoundEvent> SKELETON_VOICE = register("skeleton_voice");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(MistvaleRpg.MODID, name)));

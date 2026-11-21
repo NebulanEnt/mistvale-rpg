@@ -18,6 +18,7 @@ public final class DialogueScenes {
     private static final DialogueSpeaker SPIRIT = DialogueSpeaker.SPIRIT;
     private static final DialogueSpeaker PLAYER = DialogueSpeaker.PLAYER;
     private static final DialogueSpeaker BRANNOCH = DialogueSpeaker.BRANNOCH;
+    private static final DialogueSpeaker BRANNOCH_BONES = DialogueSpeaker.BRANNOCH_BONES;
 
     /** The Spirit's very first talk with a new player. */
     public static final DialogueScene FIRST_MEETING = DialogueScene.builder("first_meeting", "hello")
@@ -47,11 +48,21 @@ public final class DialogueScenes {
             .say("rift", SPIRIT, Emotion.HAPPY, null, DialogueAction.START_SPAWN_SCENE)
             .build();
 
-    /** First Mate Brannoch, on the deck, just before the fight. */
+    /** Captain Brannoch, on the deck, just before the fight. */
     public static final DialogueScene PROLOGUE_INTRO = DialogueScene.builder("prologue_intro", "hail")
             .say("hail", BRANNOCH, Emotion.NEUTRAL, "sea")
             .say("sea", BRANNOCH, Emotion.NEUTRAL, "warning")
-            .say("warning", BRANNOCH, Emotion.ANGRY, null)
+            // When this box is closed, the fog comes and the fight begins.
+            .say("warning", BRANNOCH, Emotion.ANGRY, null, DialogueAction.START_FIGHT)
+            .build();
+
+    /**
+     * The fog has come and the light has taken him: the skeleton Captain Brannoch, a mindless roar with the last of the man
+     * still in it. The crew stands still until this is closed, then the fight begins (see Prologue).
+     */
+    public static final DialogueScene PROLOGUE_ROAR = DialogueScene.builder("prologue_roar", "roar")
+            .say("roar", BRANNOCH_BONES, Emotion.ANGRY, "run")
+            .say("run", BRANNOCH_BONES, Emotion.ANGRY, null)
             .build();
 
     /** What she says to someone she has already met. */
@@ -75,6 +86,7 @@ public final class DialogueScenes {
     private static final Map<String, DialogueScene> ALL = Map.of(
             FIRST_MEETING.id(), FIRST_MEETING,
             PROLOGUE_INTRO.id(), PROLOGUE_INTRO,
+            PROLOGUE_ROAR.id(), PROLOGUE_ROAR,
             AGAIN.id(), AGAIN,
             WELCOME.id(), WELCOME);
 

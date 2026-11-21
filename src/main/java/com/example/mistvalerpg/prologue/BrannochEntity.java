@@ -3,6 +3,7 @@ package com.example.mistvalerpg.prologue;
 import java.util.Optional;
 
 import com.example.mistvalerpg.dialogue.DialogueManager;
+import com.example.mistvalerpg.dialogue.DialogueScenes;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -13,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -31,7 +33,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * First Mate Brannoch: the pirate captain's right hand, who stands on the deck in front of the player and talks to them before
+ * Captain Brannoch, who stands on the deck in front of the player and talks to them before
  * the fight. He cannot be hurt, does not walk, and only turns to look at whoever is near. When the fog comes, he is replaced by
  * the skeleton pirates (see Prologue).
  *
@@ -80,6 +82,16 @@ public class BrannochEntity extends PathfinderMob implements GeoEntity {
     /** The mist rolls in: he stops watching the player and glances about, uneasy, for eight seconds (a long animation that ends trembling). */
     public void lookAround() {
         entityData.set(LOOKING_AROUND, true);
+    }
+
+    // Right-click. Before the fight, he talks: if the conversation was ever closed (a lost connection, say), this starts it again.
+    @Override
+    protected InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (!level().isClientSide() && player instanceof ServerPlayer talking && Prologue.isInPrologue(talking)
+                && Prologue.stage(talking).equals(Prologue.TALK) && !DialogueManager.isTalking(talking)) {
+            DialogueManager.start(talking, DialogueScenes.PROLOGUE_INTRO, this);
+        }
+        return InteractionResult.sidedSuccess(level().isClientSide());
     }
 
     /** Puts the pirate saber in his hand (the saber of Bosses'Rise, or an iron sword if that mod does not have it). */

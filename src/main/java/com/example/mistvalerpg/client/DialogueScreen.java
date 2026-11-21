@@ -20,11 +20,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -34,7 +37,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * sounds, and the answers stacked small on the right-hand side of the screen.
  *
  * While somebody talks, their portrait opens and closes its mouth (a second picture, "_talk") eight times a second;
- * the player's portrait is a live picture of their own character that nods along.
+ * the player's portrait is a live picture of their own character that nods along, and Brannoch's is a live picture of his model.
  *
  * The text panel is old pixel paper; the answers are navy plates. A long text is cut into pages of three lines. Space, Enter or a click first finishes the typing, then turns the page,
  * then moves on. Number keys, W/S or the arrow keys and a click pick an answer.
@@ -67,6 +70,9 @@ public class DialogueScreen extends Screen {
 
     // The five shades of the dark square behind a live portrait, outermost first.
     private static final int[] VIGNETTE = { 0xFF111626, 0xFF1A2038, 0xFF242C56, 0xFF30406F, 0xFF3B4D83 };
+
+    // The five shades of the ghost's square, outermost first: a deep, cold sea-green dark, never warm.
+    private static final int[] GHOST_VIGNETTE = { 0xFF050C0F, 0xFF09171A, 0xFF0E2427, 0xFF143135, 0xFF1B4045 };
 
     private DialogueScene scene;
     private DialogueNode node;
@@ -319,8 +325,9 @@ public class DialogueScreen extends Screen {
     private void drawPortrait(GuiGraphics graphics, int x, int y, int size) {
         boolean mouthOpen = !typingDone() && (int) (elapsed() * 8.0F) % 2 == 0;
         if (node.speaker().isLive()) {
-            drawLivePlayer(graphics, x, y, size, mouthOpen);
-            return;
+            if (drawLive(graphics, x, y, size, mouthOpen)) {
+                return;
+            }
         }
         ResourceLocation base = node.speaker().portrait(node.emotion());
         ResourceLocation picture = mouthOpen ? talkPicture(base) : base;
@@ -348,25 +355,127 @@ public class DialogueScreen extends Screen {
         });
     }
 
-    // The player's own character, drawn live on a softly moving mist-coloured backdrop. While they speak they nod a little.
-    private void drawLivePlayer(GuiGraphics graphics, int x, int y, int size, boolean nod) {
-        drawBackdrop(graphics, x, y, size, node.speaker().colour());
-        LivingEntity player = minecraft.player;
-        if (player == null) {
-            return;
+    // The speakers' live models, made once each. A speaker without a model (or whose model cannot be made) is simply missing here.
+    private final Map<DialogueSpeaker, LivingEntity> portraitModels = new HashMap<>();
+    private final java.util.Set<DialogueSpeaker> brokenModels = new java.util.HashSet<>();
+
+    // The model to draw for this speaker: the player's own character, or a copy of the speaker's entity that lives only on this screen
+    // (it is never added to the world). Returns null when there is none, so the flat picture is shown instead.
+    private LivingEntity portraitModel(DialogueSpeaker speaker) {
+        if (speaker.isPlayer()) {
+            return minecraft.player;
+        }
+        if (minecraft.level == null || brokenModels.contains(speaker)) {
+            return null;
+        }
+        LivingEntity model = portraitModels.get(speaker);
+        if (model == null) {
+            try {
+                ResourceLocation id = ResourceLocation.parse(speaker.portraitEntity());
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+                Entity made = type == null ? null : type.create(minecraft.level);
+                if (made instanceof LivingEntity living) {
+                    model = living;
+                    portraitModels.put(speaker, living);
+                } else {
+                    brokenModels.add(speaker);   // no such entity (mod missing?): the flat picture is used
+                }
+            } catch (Exception e) {
+                MistvaleRpg.LOGGER.warn("Could not make the portrait model for {}", speaker.id(), e);
+                brokenModels.add(speaker);
+            }
+        }
+        return model;
+    }
+
+    // A live character (the player, or Brannoch's model, or the skeleton captain's) drawn on a backdrop. While they speak they nod a little.
+    // Returns false when there is no model to draw.
+    private boolean drawLive(GuiGraphics graphics, int x, int y, int size, boolean nod) {
+        DialogueSpeaker speaker = node.speaker();
+        LivingEntity model = portraitModel(speaker);
+        if (model == null) {
+            return false;
+        }
+        if (speaker.isGhostly()) {
+            drawGhostBackdrop(graphics, x, y, size, speaker.colour());
+        } else {
+            drawBackdrop(graphics, x, y, size, speaker.colour());
         }
         double seconds = System.currentTimeMillis() / 1000.0;
-        float scale = size * (1.0F + 0.012F * (float) Math.sin(seconds * 1.7));       // slowly "breathes"
-        float lift = player.getEyeHeight() - 0.08F - player.getBbHeight() / 2.0F - 0.26F + 0.2F;
+        if (model != minecraft.player) {
+            model.tickCount = (int) (seconds * 20.0);   // lets the model's idle animation run
+        }
+        // The framing is worked out from the model's own height, so a tall skeleton and a short pirate get the same head-and-shoulders picture.
+        float eye = Math.max(model.getEyeHeight(), 0.5F);
+        float scale = size * speaker.portraitZoom() * (1.62F / eye) * (1.0F + 0.012F * (float) Math.sin(seconds * 1.7));       // slowly "breathes"
+        float lift = eye - 0.08F - model.getBbHeight() / 2.0F - 0.26F + 0.2F + speaker.portraitLift();
         float turn = 0.45F + 0.16F * (float) Math.sin(seconds * 0.8);                 // slowly looks left and right
         float tilt = 0.05F * (float) Math.sin(seconds * 0.55F) + (nod ? 0.06F : 0.0F);
 
         graphics.enableScissor(x, y, x + size, y + size);
         try {
-            InventoryScreen.renderEntityInInventoryFollowsAngle(graphics, x, y, x + size, y + size, (int) scale, lift, turn, tilt, player);
+            InventoryScreen.renderEntityInInventoryFollowsAngle(graphics, x, y, x + size, y + size, (int) scale, lift, turn, tilt, model);
+        } catch (Exception e) {
+            brokenModels.add(speaker);   // do not try a broken model again; the flat picture takes over next frame
         } finally {
             graphics.disableScissor();
         }
+        return true;
+    }
+
+    // The ghost's backdrop: a deep sea-green dark, cold mist that rolls slowly sideways in layers, a pale glow that breathes behind the
+    // figure, wisps of soul-light that drift upwards, and a flickering cold edge. Nothing warm in it at all.
+    private void drawGhostBackdrop(GuiGraphics graphics, int x, int y, int size, int rgb) {
+        double seconds = System.currentTimeMillis() / 1000.0;
+        for (int i = 0; i < GHOST_VIGNETTE.length; i++) {
+            int inset = (int) ((GHOST_VIGNETTE.length - 1 - i) * size * 0.085F);
+            graphics.fill(x + inset, y + inset, x + size - inset, y + size - inset, GHOST_VIGNETTE[i]);
+        }
+        graphics.enableScissor(x, y, x + size, y + size);
+        // a pale glow behind the head and shoulders that slowly breathes, built from nested squares getting fainter outwards
+        float pulse = 0.65F + 0.35F * (float) Math.sin(seconds * 1.3);
+        int cx = x + size / 2;
+        int cy = y + (int) (size * 0.42F);
+        for (int ring = 7; ring >= 1; ring--) {
+            int half = (int) (size * (0.07F + ring * 0.065F));
+            int alpha = (int) ((9 + (8 - ring) * 3) * pulse);
+            graphics.fill(cx - half, cy - half, cx + half, cy + half, alpha << 24 | 0x8FFFE4);
+        }
+        // layers of fog: pale horizontal bands that roll sideways at different speeds and fade at their ends
+        for (int layer = 0; layer < 5; layer++) {
+            int bandY = y + (int) (size * (0.12 + layer * 0.19) + Math.sin(seconds * 0.4 + layer * 1.7) * size * 0.04);
+            int bandHeight = Math.max(2, (int) (size * (0.07 + 0.02 * (layer % 2))));
+            double drift = (seconds * (3.0 + layer * 1.6) * (layer % 2 == 0 ? 1 : -1)) % (size * 1.2);
+            int bandWidth = (int) (size * 0.7);
+            for (int tile = -1; tile <= 1; tile++) {
+                int left = x + (int) (drift + tile * size * 1.2) - bandWidth / 2 + size / 2;
+                for (int step = 0; step < 6; step++) {
+                    int from = left + step * bandWidth / 6;
+                    int to = left + (step + 1) * bandWidth / 6;
+                    int alpha = (int) (Math.sin((step + 0.5) / 6.0 * Math.PI) * (26 + 5 * layer));
+                    graphics.fill(Math.max(from, x), bandY, Math.min(to, x + size), bandY + bandHeight, alpha << 24 | 0xC9F5EE);
+                }
+            }
+        }
+        // soul-wisps: little pale flames that rise, sway and fade, each with a short tail beneath
+        for (int i = 0; i < 12; i++) {
+            double rise = (seconds * (0.06 + 0.01 * (i % 5)) + i * 0.137) % 1.0;
+            int px = (int) ((i * 41 % 100) / 100.0 * size + Math.sin(seconds * 0.8 + i * 1.3) * 4.0);
+            int py = (int) (size - rise * size);
+            int alpha = (int) (Math.sin(rise * Math.PI) * (110 + 20 * (i % 3)));
+            graphics.fill(x + px, y + py, x + px + 2, y + py + 2, alpha << 24 | 0xE8FFF6);
+            graphics.fill(x + px, y + py + 2, x + px + 1, y + py + 5, alpha / 3 << 24 | 0x7FE8D8);
+        }
+        // the cold edge flickers like a failing lantern; the very bottom darkens so the figure seems to come out of the dark
+        double flicker = 0.7 + 0.3 * Math.sin(seconds * 7.0) * Math.sin(seconds * 2.3);
+        for (int i = 0; i < 3; i++) {
+            graphics.fill(x + i, y, x + i + 1, y + size, (int) ((70 - i * 22) * flicker) << 24 | rgb & 0xFFFFFF);
+            graphics.fill(x + size - 1 - i, y, x + size - i, y + size, (int) ((70 - i * 22) * flicker) << 24 | rgb & 0xFFFFFF);
+        }
+        for (int i = 0; i < 7; i++) {
+            graphics.fill(x, y + size - 1 - i * (size / 24), x + size, y + size - i * (size / 24), (30 + i * 10) << 24);
+        }
+        graphics.disableScissor();
     }
 
     // A dark vignette, two slow drifting beams of mist, a few rising sparks, a shade at the bottom and a glowing edge in the speaker's colour.
@@ -437,6 +546,13 @@ public class DialogueScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scanCode, int modifiers) {
+        // Escape does what a click does (shows the rest of the line, turns the page, goes on). It never ends the conversation.
+        if (key == GLFW.GLFW_KEY_ESCAPE) {
+            if (!waiting) {
+                advance(false);
+            }
+            return true;
+        }
         if (waiting) {
             return super.keyPressed(key, scanCode, modifiers);
         }
@@ -459,7 +575,13 @@ public class DialogueScreen extends Screen {
             send(number);
             return true;
         }
-        return super.keyPressed(key, scanCode, modifiers); // Escape closes the box
+        return super.keyPressed(key, scanCode, modifiers);
+    }
+
+    // Without this, the game closes any screen on Escape by itself, before keyPressed even runs.
+    @Override
+    public boolean shouldCloseOnEsc() {
+        return false;
     }
 
     @Override
